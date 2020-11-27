@@ -32,7 +32,7 @@ namespace JiraToDgmlDump
 
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
-            var graph = BuildGraph(issues, connections, new HashSet<string>(jiraContext.Epics));
+            var graph = BuildGraph(issues, connections, new HashSet<string>(jiraContext.Epics), jiraContext);
 
             SaveDgml(graph);
 
@@ -40,23 +40,23 @@ namespace JiraToDgmlDump
             Console.ReadKey(true);
         }
 
-        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IReadOnlySet<string> epics)
+        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IReadOnlySet<string> epics, IJiraContext jiraContext)
         {
 
             var builder = new DgmlBuilder
             {
                 NodeBuilders = new NodeBuilder[]
                 {
-                   MakeNodeBuilder(epics)
+                   MakeNodeBuilder(jiraContext, epics)
                 },
                 LinkBuilders = new LinkBuilder[]
                 {
                    MakeLinkBuilder(epics)
                 },
-                CategoryBuilders = new CategoryBuilder[]
-                {
-                    MakeCategoryBuilder(epics)
-                },
+                //CategoryBuilders = new CategoryBuilder[]
+                //{
+                //    MakeCategoryBuilder(epics)
+                //},
                 //      StyleBuilders = new StyleBuilder[]
                 //      {
                 //         // <your style builders>
@@ -78,14 +78,18 @@ namespace JiraToDgmlDump
             Console.WriteLine($"DGML graph saved at: {path}");
         }
 
-        private static NodeBuilder MakeNodeBuilder(IReadOnlySet<string> epics)
+        private static NodeBuilder MakeNodeBuilder(IJiraContext jiraContext, IReadOnlySet<string> epics)
         {
-            static Node BuildNode(IssueLight issue)
+            Node BuildNode(IssueLight issue)
             {
+                var label = $"<a href=\"{jiraContext.Uri}/browse/{issue.Key}\">{issue.Key}</a><br />{issue.Summary}";
+#if DEBUG
+                Console.WriteLine($"Node: {label}");
+#endif
                 return new Node()
                 {
                     Id = issue.Key,
-                    Label = issue.Key,
+                    Label = label,
                     Description = issue.Summary,
                 };
             }
@@ -102,13 +106,17 @@ namespace JiraToDgmlDump
         {
             Link BuildLink(IssueLinkLight link)
             {
+                var isContainment = epics.Contains(link.InwardIssueKey);
+#if DEBUG
+                Console.WriteLine($"Link: {link.InwardIssueKey}-{link.OutwardIssueKey}, IsContainment: {isContainment}");
+#endif
                 return new Link()
                 {
                     Source = link.InwardIssueKey,
                     Target = link.OutwardIssueKey,
-                    Label = link.LinkType.Name,
+                    //Label = link.LinkType.Name,
                     Description = link.LinkType.Name,
-                    IsContainment = epics.Contains(link.InwardIssueKey)
+                    IsContainment = isContainment
                 };
             }
 

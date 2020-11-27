@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -30,37 +29,29 @@ namespace JiraToDgmlDump
         {
             await _initializeTask.ConfigureAwait(false);
 
-
-            var concurrentBag = new ConcurrentBag<IssueLinkLight>();
+            var concurrentBag = new List<IssueLinkLight>();
 
             var rawIssues = await _repository.GetAllIssuesInProject().ConfigureAwait(false);
-
-
-            //var batching = new BatchBlock<IssueLight>(16);
-            var getLinks = new TransformManyBlock<IssueLight, IssueLinkLight>(async i=> await _repository.GetLinks(i));
-
-
-            var collect = new ActionBlock<IssueLinkLight>(i => concurrentBag.Add(i));
+            var getLinks = new TransformManyBlock<IssueLight, IssueLinkLight>(
+                async i => await _repository.GetLinks(i),
+                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }
+                );
+            var collect = new ActionBlock<IssueLinkLight>(
+                i => concurrentBag.Add(i),
+                new ExecutionDataflowBlockOptions{MaxDegreeOfParallelism = 1}
+                );
 
             var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
             using var l1 = getLinks.LinkTo(collect, linkOptions);
-
 
             if (rawIssues.Any(x => !getLinks.Post(x)))
                 throw new Exception($"Failure to queue data for processing. Block already has {getLinks.InputCount} items to be processed.");
 
             getLinks.Complete();
             await getLinks.Completion;
-
             await collect.Completion;
-            // var users = await _repository.GetAllUsersInProject();
-            //var links = await _repository.GetAllLinks(rawIssues).ConfigureAwait(false);
-
-            //var linksLookup = links.ToDictionary(t => t.Item1, t => t.Item2);
 
             return (rawIssues, concurrentBag);
-
-            //return await _resolver.Resolve(rawIssues.Select(i=>(i, linksLookup[i.Key])), users);
         }
 
         public async Task<IEnumerable<JiraUser>> GetUsers()

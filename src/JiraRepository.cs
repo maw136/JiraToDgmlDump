@@ -85,71 +85,9 @@ namespace JiraToDgmlDump
             if (rawIssue == null)
                 throw new ArgumentNullException(nameof(rawIssue));
 
-            //async Task<IEnumerable<IssueLinkLight>> getIssueLinks(string issueKey, IEnumerable<string> linkTypeNames)
-            //{
-            //    var serializerSettings = _jira.RestClient.Settings.JsonSerializerSettings;
-            //    var jtoken1 = (await _jira.RestClient.ExecuteRequestAsync(Method.GET, string.Format("rest/api/2/issue/{0}?fields=issuelinks,created", issueKey), null).ConfigureAwait(false))["fields"]["issuelinks"];
-            //    if (jtoken1 == null)
-            //        throw new InvalidOperationException("There is no 'issueLinks' field on the issue data, make sure issue linking is turned on in JIRA.");
-            //    var source = jtoken1.Cast<JObject>();
-            //    var filteredIssueLinks = source;
-            //    if (linkTypeNames != null)
-            //        filteredIssueLinks = source.Where(link => linkTypeNames.Contains(link["type"]["name"].ToString(), StringComparer.InvariantCultureIgnoreCase));
-            //    //HashSet<string> issuesMap = await this._jira.Issues.GetIssuesAsync((IEnumerable<string>) filteredIssueLinks.Select<JObject, string>((Func<JObject, string>) (issueLink => (string) Extensions.Value<string>((IEnumerable<JToken>) (issueLink["outwardIssue"] ?? issueLink["inwardIssue"])[(object) "key"]))).ToList<string>).ConfigureAwait(false);
-            //    //if (!issuesMap.Keys.Contains(issueKey))
-            //    //    issuesMap.Add(issueKey, issue);
-            //    return filteredIssueLinks.Select(issueLink =>
-            //    {
-            //        var linkType = JsonConvert.DeserializeObject<IssueLinkType>(issueLink["type"].ToString(), serializerSettings);
-            //        var jtoken2 = issueLink["outwardIssue"];
-            //        var jtoken3 = issueLink["inwardIssue"];
-            //        var index1 = jtoken2 != null ? (string)jtoken2["key"] : null;
-            //        var index2 = jtoken3 != null ? (string)jtoken3["key"] : null;
-            //        var outwardIssue = index1 == null ? issueKey : index1;
-            //        var inwardIssue = index2 == null ? issueKey : index2;
-            //        return new IssueLinkLight { LinkType = linkType.ToNamedObjectLight(), OutwardIssueKey = outwardIssue, InwardIssueKey = inwardIssue };
-            //    });
-
-            //}
-
-            //var linksRawer = await getIssueLinks(rawIssue.Key, null);
-
-
             var linksRaw = await _jira.Links.GetLinksForIssueAsync(rawIssue.Key).ConfigureAwait(false);
             return linksRaw.Select(JiraExtensions.ToIssueLinkLight);
         }
-
-        //public async Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues)
-        //{
-        //    if (_jiraContext.LinkTypes == null)
-        //        _jiraContext.LinkTypes = (await GetLinkTypes().ConfigureAwait(false)).Select(l => l.Id).ToArray();
-
-        //    var result = new List<(string, IEnumerable<IssueLinkLight>)>();
-
-
-        //    //var block = new ActionBlock(actionAsync,
-        //    //    new ExecutionDataflowBlockOptions
-        //    //    {
-        //    //        MaxDegreeOfParallelism = degreeOfParallelism,
-        //    //        CancellationToken = cancellationToken,
-        //    //    });
-
-        //    //if (data.Any(x => !block.Post(x)))
-        //    //    throw new Exception($"Failure to queue data for processing. Block already has {block.InputCount} items to be processed.");
-
-        //    //block.Complete();
-        //    //await block.Completion;
-
-
-        //    foreach (IssueLight rawIssue in rawIssues)
-        //    {
-        //        var links = await GetLinks(rawIssue).ConfigureAwait(false);
-        //        result.Add((rawIssue.Key, links.Where(link => _jiraContext.LinkTypes.ContainsById(link.LinkType))));
-        //    }
-
-        //    return result;
-        //}
-
         public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
         {
             var linkTypesRaw = await _jira.Links.GetLinkTypesAsync().ConfigureAwait(false);
