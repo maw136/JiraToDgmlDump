@@ -15,8 +15,8 @@ namespace JiraToDgmlDump
             _diskCache = diskCache;
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(string epicKey)
-            => await _diskCache.Wrap("GetIssues", () =>_repository.GetAllIssuesInProject(epicKey));
+        public async Task<IList<IssueLight>> GetAllIssuesInProject()
+            => await _diskCache.Wrap("GetIssues", _repository.GetAllIssuesInProject);
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()
             => await _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject);

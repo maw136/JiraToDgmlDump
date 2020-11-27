@@ -12,6 +12,7 @@ namespace JiraToDgmlDump
         private string _uri;
         private string _project;
         private int _daysBackToFetchIssues;
+        private string[] _epics;
 
         public string Login
         {
@@ -84,11 +85,23 @@ namespace JiraToDgmlDump
                 OnPropertyChanged();
             }
         }
+
+        public string[] Epics
+        {
+            get => _epics;
+            set
+            {
+                if (value == _epics)
+                    return;
+                _epics = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string[] LinkTypes { get; set; }
 
         public JiraContext()
         {
-
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

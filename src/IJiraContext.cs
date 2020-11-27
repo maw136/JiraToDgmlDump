@@ -7,6 +7,7 @@ namespace JiraToDgmlDump
         string Uri { get; }
         string Project { get; }
         int DaysBackToFetchIssues { get; }
+        string[] Epics { get; }
         string[] LinkTypes { get; set; }
         bool UseCachedRepo { get; }
     }

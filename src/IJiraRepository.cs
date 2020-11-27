@@ -6,7 +6,7 @@ namespace JiraToDgmlDump
 {
     public interface IJiraRepository
     {
-        Task<IList<IssueLight>> GetAllIssuesInProject(string epicKey);
+        Task<IList<IssueLight>> GetAllIssuesInProject();
         Task<IList<JiraUser>> GetAllUsersInProject();
         Task<IEnumerable<IssueLinkLight>> GetLinks(IssueLight rawIssue);
         Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues);

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Atlassian.Jira;
 using Microsoft.Extensions.Configuration;
 using OpenSoftware.DgmlTools;
 using OpenSoftware.DgmlTools.Builders;
@@ -14,6 +16,8 @@ namespace JiraToDgmlDump
     {
         static async Task Main(string[] args)
         {
+            Console.WriteLine("Starting...");
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -22,26 +26,15 @@ namespace JiraToDgmlDump
 
             IConfigurationRoot configuration = builder.Build();
 
-            string epicKey = null;
-            do
-            {
-                Console.Write("Give Epic key: ");
-                epicKey = Console.ReadLine()?.Trim() ?? string.Empty;
-
-                if (string.IsNullOrWhiteSpace(epicKey))
-                    Console.WriteLine("Epic key empty, retrying....");
-
-            } while (string.IsNullOrWhiteSpace(epicKey));
-
             var jiraContext = new JiraContext();
             configuration.GetSection("JiraContext").Bind(jiraContext);
 
             var jiraRepository = new JiraRepository(jiraContext);
             var jiraService = new JiraService(jiraRepository);
 
-            var (issues, connections) = await jiraService.GetIssuesWithConnections(epicKey);
+            var (issues, connections) = await jiraService.GetIssuesWithConnections();
 
-            var graph = BuildGraph(issues, connections);
+            var graph = BuildGraph(issues, connections, jiraContext.Epics);
 
             SaveDgml(graph);
 
@@ -49,27 +42,27 @@ namespace JiraToDgmlDump
             Console.ReadKey(true);
         }
 
-        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
+        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, string[] epics)
         {
 
             var builder = new DgmlBuilder
             {
                 NodeBuilders = new NodeBuilder[]
                 {
-                   MakeNodeBuilder()
+                   MakeNodeBuilder(epics)
                 },
                 LinkBuilders = new LinkBuilder[]
                 {
                    MakeLinkBuilder()
                 },
-          //      CategoryBuilders = new CategoryBuilder[]
-          //      {
-          //         // <your category builders>
-          //      },
-          //      StyleBuilders = new StyleBuilder[]
-          //      {
-          //         // <your style builders>
-          //      }
+                CategoryBuilders = new CategoryBuilder[]
+                {
+                    MakeCategoryBuilder(epics)
+                },
+                //      StyleBuilders = new StyleBuilder[]
+                //      {
+                //         // <your style builders>
+                //      }
             };
 
             return builder.Build(issues, connections);
@@ -87,7 +80,7 @@ namespace JiraToDgmlDump
             Console.WriteLine($"DGML graph saved at: {path}");
         }
 
-        private static NodeBuilder MakeNodeBuilder()
+        private static NodeBuilder MakeNodeBuilder(string[] epics)
         {
             static Node BuildNode(IssueLight issue)
             {
@@ -100,7 +93,12 @@ namespace JiraToDgmlDump
                 };
             }
 
-            return new NodeBuilder<IssueLight>(BuildNode);
+            bool Accept(IssueLight issue)
+            {
+                return epics.Contains(issue.Key);
+            }
+
+            return new NodeBuilder<IssueLight>(BuildNode, Accept);
         }
 
         private static LinkBuilder MakeLinkBuilder()
@@ -117,6 +115,22 @@ namespace JiraToDgmlDump
             }
 
             return new LinkBuilder<IssueLinkLight>(BuildLink);
+        }
+
+        private static CategoryBuilder MakeCategoryBuilder(string[] epics)
+        {
+            IEnumerable<Category> BuildCategory(IssueLight issue)
+            {
+                if (epics.Contains(issue.Key))
+                    yield return new Category
+                    {
+                        Id = issue.Key,
+                        Label = issue.Key,
+                        Background = issue.Key,
+                    };
+            }
+
+            return new CategoriesBuilder<IssueLight>(BuildCategory);
         }
     }
 }

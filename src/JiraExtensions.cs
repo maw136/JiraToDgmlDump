@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlassian.Jira;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 
 namespace JiraToDgmlDump
@@ -16,16 +17,28 @@ namespace JiraToDgmlDump
             => new JiraUser(user.Key, user.DisplayName);
 
         public static IssueLight ToIssueLight(this Issue issue)
-            => new IssueLight
+        {
+            JToken jepic;
+            string epic;
+            if (issue.AdditionalFields.TryGetValue("Epic Link", out jepic))
+                epic = jepic.ToString();
+            else
+                epic = issue.ParentIssueKey;
+
+            return new IssueLight
             {
                 Key = issue.Key.Value,
                 Assignee = issue.Assignee,
                 Reporter = issue.Reporter,
                 Created = issue.Created.GetValueOrDefault(DateTime.MinValue),
                 Summary = issue.Summary,
-                Status = issue.Status.ToNamedObjectLight(),// new JiraNamedObjectLight { Id = issue.Status?.Id, Name = issue.Status?.Name },
-                Type = issue.Type.ToNamedObjectLight(),//new JiraNamedObjectLight { Id = issue.Type?.Id, Name = issue.Type?.Name },
+                Status = issue.Status
+                    .ToNamedObjectLight(), // new JiraNamedObjectLight { Id = issue.Status?.Id, Name = issue.Status?.Name },
+                Type = issue.Type
+                    .ToNamedObjectLight(), //new JiraNamedObjectLight { Id = issue.Type?.Id, Name = issue.Type?.Name },
+                EpicKey = epic
             };
+        }
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedEntity entity)
             => new JiraNamedObjectLight { Id = entity?.Id, Name = entity?.Name };

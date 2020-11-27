@@ -25,9 +25,9 @@ namespace JiraToDgmlDump
         }
 
         public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>
-            GetIssuesWithConnections(string epicKey)
+            GetIssuesWithConnections()
         {
-            var rawIssues = await _repository.GetAllIssuesInProject(epicKey);
+            var rawIssues = await _repository.GetAllIssuesInProject();
             // var users = await _repository.GetAllUsersInProject();
             var links = await _repository.GetAllLinks(rawIssues);
 

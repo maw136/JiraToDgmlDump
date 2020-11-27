@@ -34,21 +34,22 @@ namespace JiraToDgmlDump
             return rawUsers as IList<JiraUser> ?? rawUsers?.ToList() ?? new List<JiraUser>();
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(string epicKey)
+        public async Task<IList<IssueLight>> GetAllIssuesInProject()
         {
             bool useStatus = false;
             bool useCreated = false;
-            bool useEpic = !string.IsNullOrWhiteSpace(epicKey);
+            bool useEpics = _jiraContext.Epics?.Any() ?? false;
+            string epics = string.Join(',', _jiraContext.Epics?.Select(i => $"\"{i}\"") ?? Enumerable.Empty<string>());
 
             var createdFilterPart =
                 $@" AND Created > ""{DateTime.Today.AddDays(-_jiraContext.DaysBackToFetchIssues).Date:yyyy-MM-dd}"" ";
             var statusFilterPart = " AND Status NOT IN ( 11114, 6, 11110, 10904, 10108, 10109, 11115 ) ";
-            var epicFilterPart = $@" AND (""Epic Link"" = ""{epicKey}"" OR parent in (""{epicKey}"") ";
+            var epicFilterPart = $@" AND (""Epic Link"" in ({epics}) OR parent in ({epics}) OR id in ({epics}) ) ";
 
 
             var searchOptions =
                 new IssueSearchOptions(
-                    $@" Project = ""{_jiraContext.Project}"" {(useStatus ? statusFilterPart:"")} {(useEpic?epicFilterPart:"")} ) {(useCreated ? createdFilterPart: "")} ")
+                    $@" Project = ""{_jiraContext.Project}""{(useStatus ? statusFilterPart:"")}{(useEpics ? epicFilterPart:"")}{(useCreated ? createdFilterPart: "")} ")
                 {
                     StartAt = 0,
                     FetchBasicFields = false,
@@ -61,8 +62,12 @@ namespace JiraToDgmlDump
                         "summary",
                         "status",
                         "issuetype",
+                        "Epic Link",
+                        "parent"
                     },
                 };
+
+            Console.WriteLine($"JQL: {searchOptions.Jql}");
 
             var result = new List<IssueLight>();
             IPagedQueryResult<Issue> pages = null;
@@ -122,12 +127,15 @@ namespace JiraToDgmlDump
             if (_jiraContext.LinkTypes == null)
                 _jiraContext.LinkTypes = (await GetLinkTypes()).Select(l => l.Id).ToArray();
 
+            var result = new List<(string, IEnumerable<IssueLinkLight>)>();
 
-            var result = rawIssues.Select(rawIssue
-                => GetLinks(rawIssue).ContinueWith(t
-                    => (rawIssue.Key, t.Result.Where(link => _jiraContext.LinkTypes.ContainsById(link.LinkType))), TaskContinuationOptions.OnlyOnRanToCompletion));
+            foreach (IssueLight rawIssue in rawIssues)
+            {
+                var links = await GetLinks(rawIssue);
+                result.Add((rawIssue.Key, links.Where(link => _jiraContext.LinkTypes.ContainsById(link.LinkType))));
+            }
 
-            return await Task.WhenAll(result);
+            return result;
         }
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()

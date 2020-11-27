@@ -14,6 +14,7 @@ namespace JiraToDgmlDump
         public string Summary { set; get; }
         public JiraNamedObjectLight Status { get; set; }
         public JiraNamedObjectLight Type { get; set; }
+        public string EpicKey { get; set; }
 
         //public async Task<IEnumerable<IssueChangeLog>> GetChangeLogsAsync(Atlassian.Jira.Jira jira)
         //    => await jira.Issues.GetChangeLogsAsync(Key);
