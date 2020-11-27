@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -32,7 +33,7 @@ namespace JiraToDgmlDump
 
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
-            var graph = BuildGraph(issues, connections, new HashSet<string>(jiraContext.Epics), jiraContext);
+            var graph = BuildGraph(issues, connections, jiraContext);
 
             SaveDgml(graph);
 
@@ -40,18 +41,19 @@ namespace JiraToDgmlDump
             Console.ReadKey(true);
         }
 
-        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IReadOnlySet<string> epics, IJiraContext jiraContext)
+        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IJiraContext jiraContext)
         {
 
             var builder = new DgmlBuilder
             {
                 NodeBuilders = new NodeBuilder[]
                 {
-                   MakeNodeBuilder(jiraContext, epics)
+                   MakeNodeBuilder(jiraContext)
                 },
                 LinkBuilders = new LinkBuilder[]
                 {
-                   MakeLinkBuilder(epics)
+                   MakeLinkBuilder(),
+                   MakeContainerBuilder()
                 },
                 //CategoryBuilders = new CategoryBuilder[]
                 //{
@@ -78,51 +80,53 @@ namespace JiraToDgmlDump
             Console.WriteLine($"DGML graph saved at: {path}");
         }
 
-        private static NodeBuilder MakeNodeBuilder(IJiraContext jiraContext, IReadOnlySet<string> epics)
+        private static NodeBuilder MakeNodeBuilder(IJiraContext jiraContext)
         {
             Node BuildNode(IssueLight issue)
             {
-                var label = $"{issue.Key}\n{issue.Summary}";
-#if DEBUG
-                Console.WriteLine($"Node: {label}");
-#endif
+                Debug.Assert(issue.Key != null);
+                Debug.Assert(issue.EpicKey != null);
+
                 return new Node()
                 {
                     Id = issue.Key,
-                    Label = label,
+                    Label = $"{issue.Key}\n{issue.Summary}",
                     Description = issue.Summary,
-                    Reference = $"{jiraContext.Uri}/browse/{issue.Key}"
+                    Reference = $"{jiraContext.Uri}browse/{issue.Key}"
                 };
             }
 
-            bool Accept(IssueLight issue)
-            {
-                return epics.Contains(issue.Key);
-            }
-
-            return new NodeBuilder<IssueLight>(BuildNode, Accept);
+            return new NodeBuilder<IssueLight>(BuildNode);
         }
 
-        private static LinkBuilder MakeLinkBuilder(IReadOnlySet<string> epics)
+        private static LinkBuilder MakeLinkBuilder()
         {
             Link BuildLink(IssueLinkLight link)
             {
-                var isContainment = epics.Contains(link.InwardIssueKey);
-#if DEBUG
-                if (isContainment)
-                    Console.WriteLine($"Link: {link.InwardIssueKey}-{link.OutwardIssueKey}, IsContainment: {isContainment}");
-#endif
                 return new Link()
                 {
                     Source = link.InwardIssueKey,
                     Target = link.OutwardIssueKey,
-                    //Label = link.LinkType.Name,
                     Description = link.LinkType.Name,
-                    IsContainment = isContainment
                 };
             }
 
             return new LinkBuilder<IssueLinkLight>(BuildLink);
+        }
+
+        private static LinkBuilder MakeContainerBuilder()
+        {
+            Link BuildLink(IssueLight issue)
+            {
+                return new Link()
+                {
+                    Source = issue.EpicKey,
+                    Target = issue.Key,
+                    IsContainment = true
+                };
+            }
+
+            return new LinkBuilder<IssueLight>(BuildLink);
         }
 
         private static CategoryBuilder MakeCategoryBuilder(IReadOnlySet<string> epics)
@@ -147,8 +151,6 @@ namespace JiraToDgmlDump
             {
                 return new Style()
                 {
-                    //Condition = new List<Condition> { new Condition { } }
-
                 };
             }
 
