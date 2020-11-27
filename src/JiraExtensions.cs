@@ -65,7 +65,7 @@ namespace JiraToDgmlDump
                     Method.GET,
                     $"{url}?projectKeys={jiraContext.Project}&startAt={startAt}&maxResults={MaxUsersPerRequest}",
                     null,
-                    token);
+                    token).ConfigureAwait(false);
 
                 if (page == null)
                     break;

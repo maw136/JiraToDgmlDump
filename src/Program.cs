@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Atlassian.Jira;
 using Microsoft.Extensions.Configuration;
 using OpenSoftware.DgmlTools;
 using OpenSoftware.DgmlTools.Builders;
@@ -32,9 +30,9 @@ namespace JiraToDgmlDump
             var jiraRepository = new JiraRepository(jiraContext);
             var jiraService = new JiraService(jiraRepository);
 
-            var (issues, connections) = await jiraService.GetIssuesWithConnections();
+            var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
-            var graph = BuildGraph(issues, connections, jiraContext.Epics);
+            var graph = BuildGraph(issues, connections, new HashSet<string>(jiraContext.Epics));
 
             SaveDgml(graph);
 
@@ -42,7 +40,7 @@ namespace JiraToDgmlDump
             Console.ReadKey(true);
         }
 
-        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, string[] epics)
+        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IReadOnlySet<string> epics)
         {
 
             var builder = new DgmlBuilder
@@ -53,7 +51,7 @@ namespace JiraToDgmlDump
                 },
                 LinkBuilders = new LinkBuilder[]
                 {
-                   MakeLinkBuilder()
+                   MakeLinkBuilder(epics)
                 },
                 CategoryBuilders = new CategoryBuilder[]
                 {
@@ -80,7 +78,7 @@ namespace JiraToDgmlDump
             Console.WriteLine($"DGML graph saved at: {path}");
         }
 
-        private static NodeBuilder MakeNodeBuilder(string[] epics)
+        private static NodeBuilder MakeNodeBuilder(IReadOnlySet<string> epics)
         {
             static Node BuildNode(IssueLight issue)
             {
@@ -89,7 +87,6 @@ namespace JiraToDgmlDump
                     Id = issue.Key,
                     Label = issue.Key,
                     Description = issue.Summary,
-                    //Category = issue.Type.Name
                 };
             }
 
@@ -101,23 +98,24 @@ namespace JiraToDgmlDump
             return new NodeBuilder<IssueLight>(BuildNode, Accept);
         }
 
-        private static LinkBuilder MakeLinkBuilder()
+        private static LinkBuilder MakeLinkBuilder(IReadOnlySet<string> epics)
         {
-            static Link BuildLink(IssueLinkLight link)
+            Link BuildLink(IssueLinkLight link)
             {
                 return new Link()
                 {
                     Source = link.InwardIssueKey,
                     Target = link.OutwardIssueKey,
                     Label = link.LinkType.Name,
-                    Description = link.LinkType.Name
+                    Description = link.LinkType.Name,
+                    IsContainment = epics.Contains(link.InwardIssueKey)
                 };
             }
 
             return new LinkBuilder<IssueLinkLight>(BuildLink);
         }
 
-        private static CategoryBuilder MakeCategoryBuilder(string[] epics)
+        private static CategoryBuilder MakeCategoryBuilder(IReadOnlySet<string> epics)
         {
             IEnumerable<Category> BuildCategory(IssueLight issue)
             {
@@ -131,6 +129,21 @@ namespace JiraToDgmlDump
             }
 
             return new CategoriesBuilder<IssueLight>(BuildCategory);
+        }
+
+        private static StyleBuilder MekeStyleBuilder(IReadOnlySet<string> epics)
+        {
+            Style BuildStyle(IssueLight issue)
+            {
+                return new Style()
+                {
+                    //Condition = new List<Condition> { new Condition { } }
+
+                };
+            }
+
+
+            return new StyleBuilder<IssueLight>(BuildStyle);
         }
     }
 }

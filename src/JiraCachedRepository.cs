@@ -16,29 +16,29 @@ namespace JiraToDgmlDump
         }
 
         public async Task<IList<IssueLight>> GetAllIssuesInProject()
-            => await _diskCache.Wrap("GetIssues", _repository.GetAllIssuesInProject);
+            => await _diskCache.Wrap("GetIssues", _repository.GetAllIssuesInProject).ConfigureAwait(false);
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()
-            => await _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject);
+            => await _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject).ConfigureAwait(false);
 
         public async Task<IEnumerable<IssueLinkLight>> GetLinks(IssueLight rawIssue)
-            => await _diskCache.Wrap($"{ rawIssue.Key}_links", () => _repository.GetLinks(rawIssue));
+            => await _diskCache.Wrap($"{ rawIssue.Key}_links", () => _repository.GetLinks(rawIssue)).ConfigureAwait(false);
 
         public async Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues)
-            => await Task.WhenAll(rawIssues/*.AsParallel()*/.Select(ProcessLinksInParallel));
+            => await Task.WhenAll(rawIssues/*.AsParallel()*/.Select(ProcessLinksInParallel)).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
-            => await _diskCache.Wrap("_linkTypes", _repository.GetLinkTypes);
+            => await _diskCache.Wrap("_linkTypes", _repository.GetLinkTypes).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetStatuses()
-            => await _diskCache.Wrap("_statuses", GetStatuses);
+            => await _diskCache.Wrap("_statuses", GetStatuses).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
-            => await _diskCache.Wrap("_types", GetTypes);
+            => await _diskCache.Wrap("_types", GetTypes).ConfigureAwait(false);
 
         private async Task<(string, IEnumerable<IssueLinkLight>)> ProcessLinksInParallel(IssueLight rawIssue)
         {
-            var links = await GetLinks(rawIssue);
+            var links = await GetLinks(rawIssue).ConfigureAwait(false);
             return (rawIssue.Key, links);
         }
     }

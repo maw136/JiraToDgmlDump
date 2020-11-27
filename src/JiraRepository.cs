@@ -4,9 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlassian.Jira;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
 
 namespace JiraToDgmlDump
 {
@@ -30,7 +27,7 @@ namespace JiraToDgmlDump
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()
         {
-            var rawUsers = await _jira.GetAllUsers(_jiraContext);
+            var rawUsers = await _jira.GetAllUsers(_jiraContext).ConfigureAwait(false);
             return rawUsers as IList<JiraUser> ?? rawUsers?.ToList() ?? new List<JiraUser>();
         }
 
@@ -73,7 +70,7 @@ namespace JiraToDgmlDump
             IPagedQueryResult<Issue> pages = null;
             do
             {
-                pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions);
+                pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
                 Debug.Assert(pages != null);
                 result.AddRange(pages.Select(JiraExtensions.ToIssueLight));
                 searchOptions.StartAt = Math.Min(searchOptions.StartAt + pages.ItemsPerPage, pages.TotalItems);
@@ -118,41 +115,56 @@ namespace JiraToDgmlDump
             //var linksRawer = await getIssueLinks(rawIssue.Key, null);
 
 
-            var linksRaw = await _jira.Links.GetLinksForIssueAsync(rawIssue.Key);
+            var linksRaw = await _jira.Links.GetLinksForIssueAsync(rawIssue.Key).ConfigureAwait(false);
             return linksRaw.Select(JiraExtensions.ToIssueLinkLight);
         }
 
-        public async Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues)
-        {
-            if (_jiraContext.LinkTypes == null)
-                _jiraContext.LinkTypes = (await GetLinkTypes()).Select(l => l.Id).ToArray();
+        //public async Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues)
+        //{
+        //    if (_jiraContext.LinkTypes == null)
+        //        _jiraContext.LinkTypes = (await GetLinkTypes().ConfigureAwait(false)).Select(l => l.Id).ToArray();
 
-            var result = new List<(string, IEnumerable<IssueLinkLight>)>();
+        //    var result = new List<(string, IEnumerable<IssueLinkLight>)>();
 
-            foreach (IssueLight rawIssue in rawIssues)
-            {
-                var links = await GetLinks(rawIssue);
-                result.Add((rawIssue.Key, links.Where(link => _jiraContext.LinkTypes.ContainsById(link.LinkType))));
-            }
 
-            return result;
-        }
+        //    //var block = new ActionBlock(actionAsync,
+        //    //    new ExecutionDataflowBlockOptions
+        //    //    {
+        //    //        MaxDegreeOfParallelism = degreeOfParallelism,
+        //    //        CancellationToken = cancellationToken,
+        //    //    });
+
+        //    //if (data.Any(x => !block.Post(x)))
+        //    //    throw new Exception($"Failure to queue data for processing. Block already has {block.InputCount} items to be processed.");
+
+        //    //block.Complete();
+        //    //await block.Completion;
+
+
+        //    foreach (IssueLight rawIssue in rawIssues)
+        //    {
+        //        var links = await GetLinks(rawIssue).ConfigureAwait(false);
+        //        result.Add((rawIssue.Key, links.Where(link => _jiraContext.LinkTypes.ContainsById(link.LinkType))));
+        //    }
+
+        //    return result;
+        //}
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
         {
-            var linkTypesRaw = await _jira.Links.GetLinkTypesAsync();
+            var linkTypesRaw = await _jira.Links.GetLinkTypesAsync().ConfigureAwait(false);
             return linkTypesRaw.Select(JiraExtensions.ToNamedObjectLight);
         }
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetStatuses()
         {
-            var statuses = await _jira.Statuses.GetStatusesAsync();
+            var statuses = await _jira.Statuses.GetStatusesAsync().ConfigureAwait(false);
             return statuses?.Select(JiraExtensions.ToNamedObjectLight) ?? Enumerable.Empty<JiraNamedObjectLight>();
         }
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
         {
-            var statuses = await _jira.IssueTypes.GetIssueTypesForProjectAsync(_jiraContext.Project);
+            var statuses = await _jira.IssueTypes.GetIssueTypesForProjectAsync(_jiraContext.Project).ConfigureAwait(false);
             return statuses?.Select(JiraExtensions.ToNamedObjectLight) ?? Enumerable.Empty<JiraNamedObjectLight>();
         }
 
