@@ -16,14 +16,11 @@ namespace JiraToDgmlDump
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
             => new JiraUser(user.Key, user.DisplayName);
 
-        public static IssueLight ToIssueLight(this Issue issue)
+        public static IssueLight ToIssueLight(this Issue issue, string epicFieldId)
         {
-            JToken jepic;
-            string epic;
-            if (issue.AdditionalFields.TryGetValue("Epic Link", out jepic))
+            string epic = null;
+            if (issue.AdditionalFields.TryGetValue(epicFieldId, out var jepic))
                 epic = jepic.ToString();
-            else
-                epic = issue.ParentIssueKey;
 
             return new IssueLight
             {

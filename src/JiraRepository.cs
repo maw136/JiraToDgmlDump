@@ -33,6 +33,10 @@ namespace JiraToDgmlDump
 
         public async Task<IList<IssueLight>> GetAllIssuesInProject()
         {
+            var customFields = await _jira.Fields.GetCustomFieldsAsync(new CustomFieldFetchOptions
+                { ProjectKeys = {_jiraContext.Project}});
+            var epicField = customFields.First(cf => cf.Name == "Epic Link");
+
             bool useStatus = false;
             bool useCreated = false;
             bool useEpics = _jiraContext.Epics?.Any() ?? false;
@@ -41,7 +45,7 @@ namespace JiraToDgmlDump
             var createdFilterPart =
                 $@" AND Created > ""{DateTime.Today.AddDays(-_jiraContext.DaysBackToFetchIssues).Date:yyyy-MM-dd}"" ";
             var statusFilterPart = " AND Status NOT IN ( 11114, 6, 11110, 10904, 10108, 10109, 11115 ) ";
-            var epicFilterPart = $@" AND (""Epic Link"" in ({epics}) OR parent in ({epics}) OR id in ({epics}) ) ";
+            var epicFilterPart = $@" AND (""{epicField.Name}"" in ({epics}) OR parent in ({epics}) OR id in ({epics}) ) ";
 
 
             var searchOptions =
@@ -59,7 +63,7 @@ namespace JiraToDgmlDump
                         "summary",
                         "status",
                         "issuetype",
-                        "Epic Link",
+                        epicField.Id,
                         "parent"
                     },
                 };
@@ -72,7 +76,7 @@ namespace JiraToDgmlDump
             {
                 pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
                 Debug.Assert(pages != null);
-                result.AddRange(pages.Select(JiraExtensions.ToIssueLight));
+                result.AddRange(pages.Select(i=>i.ToIssueLight(epicField.Id)));
                 searchOptions.StartAt = Math.Min(searchOptions.StartAt + pages.ItemsPerPage, pages.TotalItems);
 
             } while (searchOptions.StartAt < pages.TotalItems);

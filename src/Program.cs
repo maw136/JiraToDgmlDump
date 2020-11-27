@@ -85,7 +85,6 @@ namespace JiraToDgmlDump
             Node BuildNode(IssueLight issue)
             {
                 Debug.Assert(issue.Key != null);
-                Debug.Assert(issue.EpicKey != null);
 
                 return new Node()
                 {
@@ -126,7 +125,10 @@ namespace JiraToDgmlDump
                 };
             }
 
-            return new LinkBuilder<IssueLight>(BuildLink);
+            static bool Accept(IssueLight issue)
+                => issue.EpicKey != null;
+
+            return new LinkBuilder<IssueLight>(BuildLink, Accept);
         }
 
         private static CategoryBuilder MakeCategoryBuilder(IReadOnlySet<string> epics)

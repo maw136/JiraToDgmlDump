@@ -69,6 +69,7 @@ namespace JiraToDgmlDump
 
             _statuses = new ReadOnlyCollection<JiraNamedObjectLight>(statuses.ToList());
             _types = new ReadOnlyCollection<JiraNamedObjectLight>(types.ToList());
+
         }
     }
 }
