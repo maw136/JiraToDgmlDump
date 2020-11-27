@@ -82,7 +82,7 @@ namespace JiraToDgmlDump
         {
             Node BuildNode(IssueLight issue)
             {
-                var label = $"<a href=\"{jiraContext.Uri}/browse/{issue.Key}\">{issue.Key}</a><br />{issue.Summary}";
+                var label = $"{issue.Key}\n{issue.Summary}";
 #if DEBUG
                 Console.WriteLine($"Node: {label}");
 #endif
@@ -91,6 +91,7 @@ namespace JiraToDgmlDump
                     Id = issue.Key,
                     Label = label,
                     Description = issue.Summary,
+                    Reference = $"{jiraContext.Uri}/browse/{issue.Key}"
                 };
             }
 
@@ -108,7 +109,8 @@ namespace JiraToDgmlDump
             {
                 var isContainment = epics.Contains(link.InwardIssueKey);
 #if DEBUG
-                Console.WriteLine($"Link: {link.InwardIssueKey}-{link.OutwardIssueKey}, IsContainment: {isContainment}");
+                if (isContainment)
+                    Console.WriteLine($"Link: {link.InwardIssueKey}-{link.OutwardIssueKey}, IsContainment: {isContainment}");
 #endif
                 return new Link()
                 {

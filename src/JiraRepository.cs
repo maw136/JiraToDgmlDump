@@ -105,7 +105,5 @@ namespace JiraToDgmlDump
             var statuses = await _jira.IssueTypes.GetIssueTypesForProjectAsync(_jiraContext.Project).ConfigureAwait(false);
             return statuses?.Select(JiraExtensions.ToNamedObjectLight) ?? Enumerable.Empty<JiraNamedObjectLight>();
         }
-
-
     }
 }
