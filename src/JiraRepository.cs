@@ -64,8 +64,10 @@ namespace JiraToDgmlDump
                         "status",
                         "issuetype",
                         epicField.Id,
-                        "parent"
-                    },
+                        "parent",
+                        "labels",
+                        "storypoints"
+                    }
                 };
 
             Console.WriteLine($"JQL: {searchOptions.Jql}");
