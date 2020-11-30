@@ -115,11 +115,13 @@ namespace JiraToDgmlDump
                 IEnumerable<string> elements = new[]
                 {
                     issue.Key,
-                    $"{issue.Summary} {(issue.StoryPoints.HasValue ? $"{issue.StoryPoints.Value} SP" : null)}",
-                    $"{issue.Status.Name} {String.Join(", ", issue.Labels.Select(label => $"#{label}"))}"
-                }.Where(o => !String.IsNullOrEmpty(o));
+                    $"{issue.Summary}",
+                    $"{(issue.StoryPoints.HasValue ? $"{issue.StoryPoints.Value} SP" : null)}",
+                    $"{issue.Status.Name}",
+                    $"{string.Join(", ", issue.Labels.Select(label => $"#{label}"))}"
+                }.Where(o => !string.IsNullOrEmpty(o));
 
-                return String.Join(Environment.NewLine, elements);
+                return string.Join(Environment.NewLine, elements);
             }
         }
 

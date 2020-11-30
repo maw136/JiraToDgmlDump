@@ -27,6 +27,6 @@ namespace JiraToDgmlDump
             => Key != null ? Key.GetHashCode() : 0;
 
         public override string ToString()
-            => String.IsNullOrWhiteSpace(DisplayName) ? Key : DisplayName;
+            => string.IsNullOrWhiteSpace(DisplayName) ? Key : DisplayName;
     }
 }
