@@ -33,8 +33,20 @@ namespace JiraToDgmlDump
                     .ToNamedObjectLight(), // new JiraNamedObjectLight { Id = issue.Status?.Id, Name = issue.Status?.Name },
                 Type = issue.Type
                     .ToNamedObjectLight(), //new JiraNamedObjectLight { Id = issue.Type?.Id, Name = issue.Type?.Name },
-                EpicKey = epic
+                EpicKey = epic,
+                Labels = issue.Labels.ToList(),
+                StoryPoints = GetStoryPoints(issue)
             };
+        }
+
+        private static int? GetStoryPoints(Issue issue)
+        {
+            if (issue.AdditionalFields.TryGetValue("storypoints", out JToken storyPointsJToken))
+            {
+                return storyPointsJToken.Value<int>();
+            }
+
+            return null;
         }
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedEntity entity)

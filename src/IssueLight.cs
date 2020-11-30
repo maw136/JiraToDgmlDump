@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace JiraToDgmlDump
 {
@@ -12,6 +13,8 @@ namespace JiraToDgmlDump
         public JiraNamedObjectLight Status { get; set; }
         public JiraNamedObjectLight Type { get; set; }
         public string EpicKey { get; set; }
+        public List<string> Labels { get; set; }
+        public int? StoryPoints { get; set; }
 
         //public async Task<IEnumerable<IssueChangeLog>> GetChangeLogsAsync(Atlassian.Jira.Jira jira)
         //    => await jira.Issues.GetChangeLogsAsync(Key);

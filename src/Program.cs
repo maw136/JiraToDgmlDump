@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Microsoft.Extensions.Configuration;
@@ -33,12 +34,12 @@ namespace JiraToDgmlDump
 
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
-            var graph = BuildGraph(issues, connections, jiraContext);
+            var graph = BuildGraph(
+                issues.Where(issue => issue.Status.Name != "Cancelled"), 
+                connections, 
+                jiraContext);
 
             SaveDgml(graph);
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey(true);
         }
 
         private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IJiraContext jiraContext)
@@ -86,10 +87,10 @@ namespace JiraToDgmlDump
             {
                 Debug.Assert(issue.Key != null);
 
-                return new Node()
+                return new Node
                 {
                     Id = issue.Key,
-                    Label = $"{issue.Key}\n{issue.Summary}",
+                    Label = GetIssueLabel(issue),
                     Description = issue.Summary,
                     Reference = $"{jiraContext.Uri}browse/{issue.Key}"
                 };
@@ -98,14 +99,33 @@ namespace JiraToDgmlDump
             return new NodeBuilder<IssueLight>(BuildNode);
         }
 
+        private static string GetIssueLabel(IssueLight issue)
+        {
+            if (issue.Type.Name == "Epic")
+            {
+                return $"{issue.Key} {issue.Summary}";
+            }
+            else
+            {
+                IEnumerable<string> elements = new[]
+                {
+                    issue.Key,
+                    $"{issue.Summary} {(issue.StoryPoints.HasValue ? $"{issue.StoryPoints.Value} SP" : null)}",
+                    $"{issue.Status.Name} {String.Join(", ", issue.Labels.Select(label => $"#{label}"))}"
+                }.Where(o => !String.IsNullOrEmpty(o));
+
+                return String.Join(Environment.NewLine, elements);
+            }
+        }
+
         private static LinkBuilder MakeLinkBuilder()
         {
             Link BuildLink(IssueLinkLight link)
             {
-                return new Link()
+                return new Link
                 {
-                    Source = link.InwardIssueKey,
-                    Target = link.OutwardIssueKey,
+                    Source = link.OutwardIssueKey,
+                    Target = link.InwardIssueKey,
                     Description = link.LinkType.Name,
                 };
             }
