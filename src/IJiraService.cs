@@ -7,8 +7,9 @@ namespace JiraToDgmlDump
     {
         Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)> GetIssuesWithConnections();
         Task<IEnumerable<JiraUser>> GetUsers();
-
         IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; }
         IReadOnlyCollection<JiraNamedObjectLight> Types { get; }
+        IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; }
+        string EpicTypeId { get; }
     }
 }

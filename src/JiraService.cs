@@ -9,18 +9,20 @@ namespace JiraToDgmlDump
 {
     public class JiraService : IJiraService
     {
+        private readonly IJiraContext _jiraContext;
         private readonly IJiraRepository _repository;
-        private readonly JiraResolver _resolver;
 
         public IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; private set; }
         public IReadOnlyCollection<JiraNamedObjectLight> Types { get; private set; }
         public IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; private set; }
         public Task InitializeTask { get; }
 
-        public JiraService(IJiraRepository repository)
+        public string EpicTypeId => Types.Single(t => t.Name == _jiraContext.EpicTypeName).Id;
+
+        public JiraService(IJiraContext jiraContext, IJiraRepository repository)
         {
-            _repository = repository;
-            _resolver = new JiraResolver();
+            _jiraContext = jiraContext ?? throw new ArgumentNullException(nameof(jiraContext));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
 
             InitializeTask = Initialize();
         }
@@ -29,16 +31,14 @@ namespace JiraToDgmlDump
             GetIssuesWithConnections()
         {
             await InitializeTask.ConfigureAwait(false);
-
             var concurrentBag = new List<IssueLinkLight>();
-
             var rawIssues = await _repository.GetAllIssuesInProject(CustomFields).ConfigureAwait(false);
 
             Console.WriteLine($"Loaded issues (count): {rawIssues.Count}");
 
             var getLinks = new TransformManyBlock<IssueLight, IssueLinkLight>(
                 async i => await _repository.GetLinks(i),
-                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }
+                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 4 }
                 );
             var collect = new ActionBlock<IssueLinkLight>(
                 i => concurrentBag.Add(i),

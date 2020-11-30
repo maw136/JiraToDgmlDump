@@ -9,10 +9,6 @@ namespace JiraToDgmlDump
 {
     public class JiraRepository : IJiraRepository
     {
-        private const string EpicLinkName = "Epic Link";
-
-        private const string StoryPointsName = "Story Points";
-
         private const int MaxIssuesPerRequest = 100;
 
         private readonly Atlassian.Jira.Jira _jira;
@@ -35,13 +31,13 @@ namespace JiraToDgmlDump
             return rawUsers as IList<JiraUser> ?? rawUsers?.ToList() ?? new List<JiraUser>();
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(IEnumerable<JiraNamedObjectLight> customFields)
+        public async Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
         {
             if (customFields == null)
                 throw new ArgumentNullException(nameof(customFields));
 
-            var epicField = customFields.First(cf => cf.Name == EpicLinkName);
-            var storyPointsField = customFields.First(cf => cf.Name == StoryPointsName);
+            var epicField = customFields.First(cf => cf.Name == _jiraContext.EpicLinkName);
+            var storyPointsField = customFields.First(cf => cf.Name == _jiraContext.StoryPointsName);
 
             bool useStatus = _jiraContext.ExcludedStatuses?.LongLength > 0;
             bool useCreated = false;

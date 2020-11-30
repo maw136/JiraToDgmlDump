@@ -15,7 +15,7 @@ namespace JiraToDgmlDump
             _diskCache = diskCache;
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(IEnumerable<JiraNamedObjectLight> customFields)
+        public async Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
             => await _diskCache.Wrap("GetIssues", () => _repository.GetAllIssuesInProject(customFields)).ConfigureAwait(false);
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()

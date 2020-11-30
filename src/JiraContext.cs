@@ -1,128 +1,22 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using JiraToDgmlDump.Annotations;
+﻿using System.Collections.Generic;
 
 namespace JiraToDgmlDump
 {
-    public class JiraContext : IJiraContext, INotifyPropertyChanged
+    public class JiraContext : IJiraContext
     {
-        private bool _useCachedRepo;
-        private string _login;
-        private string _password;
-        private string _uri;
-        private string _project;
-        private int _daysBackToFetchIssues;
-        private string[] _epics;
-        private string[] _excludedStatuses;
-
-        public string Login
-        {
-            get => _login;
-            set
-            {
-                if (value == _login)
-                    return;
-                _login = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Password
-        {
-            get => _password;
-            set
-            {
-                if (value == _password)
-                    return;
-                _password = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Uri
-        {
-            get => _uri;
-            set
-            {
-                if (value == _uri)
-                    return;
-                _uri = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Project
-        {
-            get => _project;
-            set
-            {
-                if (value == _project)
-                    return;
-                _project = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public int DaysBackToFetchIssues
-        {
-            get => _daysBackToFetchIssues;
-            set
-            {
-                if (value == _daysBackToFetchIssues)
-                    return;
-                _daysBackToFetchIssues = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool UseCachedRepo
-        {
-            get => _useCachedRepo;
-            set
-            {
-                if (value == _useCachedRepo)
-                    return;
-                _useCachedRepo = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string[] Epics
-        {
-            get => _epics;
-            set
-            {
-                if (value == _epics)
-                    return;
-                _epics = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string[] ExcludedStatuses
-        {
-            get => _excludedStatuses;
-            set
-            {
-                if (Equals(value, _excludedStatuses))
-                    return;
-                _excludedStatuses = value;
-                OnPropertyChanged();
-            }
-        }
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public string Uri { get; set; }
+        public string Project { get; set; }
+        public int DaysBackToFetchIssues { get; set; }
+        public bool UseCachedRepo { get; set; }
+        public Dictionary<string, StatusColorInfo> StatusColors { get; } = new();
+        public string[] Epics { get; set; }
+        public string[] ExcludedStatuses { get; set; }
+        public string EpicTypeName { get; set; }
+        public string EpicLinkName { get; set; }
+        public string StoryPointsName { get; set; }
 
         public string[] LinkTypes { get; set; }
-
-        public JiraContext()
-        {
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

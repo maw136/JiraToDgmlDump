@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace JiraToDgmlDump
 {
     public interface IJiraContext
@@ -10,6 +12,16 @@ namespace JiraToDgmlDump
         string[] Epics { get; }
         string[] LinkTypes { get; set; }
         string[] ExcludedStatuses { get; }
+        string EpicTypeName { get; }
+        string EpicLinkName { get; }
+        string StoryPointsName { get; }
         bool UseCachedRepo { get; }
+        Dictionary<string, StatusColorInfo> StatusColors { get; }
+    }
+
+    public class StatusColorInfo
+    {
+        public string Color { get; set; }
+        public string[] StatusIds { get; set; }
     }
 }
