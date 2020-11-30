@@ -15,8 +15,8 @@ namespace JiraToDgmlDump
             _diskCache = diskCache;
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject()
-            => await _diskCache.Wrap("GetIssues", _repository.GetAllIssuesInProject).ConfigureAwait(false);
+        public async Task<IList<IssueLight>> GetAllIssuesInProject(IEnumerable<JiraNamedObjectLight> customFields)
+            => await _diskCache.Wrap("GetIssues", () => _repository.GetAllIssuesInProject(customFields)).ConfigureAwait(false);
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()
             => await _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject).ConfigureAwait(false);
@@ -35,6 +35,9 @@ namespace JiraToDgmlDump
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
             => await _diskCache.Wrap("_types", GetTypes).ConfigureAwait(false);
+
+        public async Task<IEnumerable<JiraNamedObjectLight>> GetCustomFields()
+            => await _diskCache.Wrap("_customFields", GetCustomFields).ConfigureAwait(false);
 
         private async Task<(string, IEnumerable<IssueLinkLight>)> ProcessLinksInParallel(IssueLight rawIssue)
         {

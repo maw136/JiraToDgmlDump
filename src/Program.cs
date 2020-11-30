@@ -32,6 +32,8 @@ namespace JiraToDgmlDump
             var jiraRepository = new JiraRepository(jiraContext);
             var jiraService = new JiraService(jiraRepository);
 
+            await jiraService.InitializeTask;
+
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
             var epicTypeId = jiraService.Types.Single(t => t.Name == "Epic").Id;

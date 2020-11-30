@@ -16,12 +16,8 @@ namespace JiraToDgmlDump
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
             => new JiraUser(user.Key, user.DisplayName);
 
-        public static IssueLight ToIssueLight(this Issue issue, string epicFieldId)
+        public static IssueLight ToIssueLight(this Issue issue, string epicFieldId, string storyPointsFieldId)
         {
-            string epic = null;
-            if (issue.AdditionalFields.TryGetValue(epicFieldId, out var jepic))
-                epic = jepic.ToString();
-
             return new IssueLight
             {
                 Key = issue.Key.Value,
@@ -33,21 +29,14 @@ namespace JiraToDgmlDump
                     .ToNamedObjectLight(), // new JiraNamedObjectLight { Id = issue.Status?.Id, Name = issue.Status?.Name },
                 Type = issue.Type
                     .ToNamedObjectLight(), //new JiraNamedObjectLight { Id = issue.Type?.Id, Name = issue.Type?.Name },
-                EpicKey = epic,
+                EpicKey = GetCustomField<string>(issue, epicFieldId),
                 Labels = issue.Labels.ToList(),
-                StoryPoints = GetStoryPoints(issue)
+                StoryPoints = GetCustomField<int?>(issue, storyPointsFieldId)
             };
         }
 
-        private static int? GetStoryPoints(Issue issue)
-        {
-            if (issue.AdditionalFields.TryGetValue("storypoints", out JToken storyPointsJToken))
-            {
-                return storyPointsJToken.Value<int>();
-            }
-
-            return null;
-        }
+        private static T GetCustomField<T>(Issue issue, string fieldId)
+            => issue.AdditionalFields.TryGetValue(fieldId, out JToken fieldJToken) ? fieldJToken.Value<T>() : default;
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedEntity entity)
             => new JiraNamedObjectLight { Id = entity?.Id, Name = entity?.Name };

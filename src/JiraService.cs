@@ -9,29 +9,30 @@ namespace JiraToDgmlDump
 {
     public class JiraService : IJiraService
     {
-        private readonly Task _initializeTask;
         private readonly IJiraRepository _repository;
         private readonly JiraResolver _resolver;
 
         public IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; private set; }
         public IReadOnlyCollection<JiraNamedObjectLight> Types { get; private set; }
+        public IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; private set; }
+        public Task InitializeTask { get; }
 
         public JiraService(IJiraRepository repository)
         {
             _repository = repository;
             _resolver = new JiraResolver();
 
-            _initializeTask = Initialize();
+            InitializeTask = Initialize();
         }
 
         public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>
             GetIssuesWithConnections()
         {
-            await _initializeTask.ConfigureAwait(false);
+            await InitializeTask.ConfigureAwait(false);
 
             var concurrentBag = new List<IssueLinkLight>();
 
-            var rawIssues = await _repository.GetAllIssuesInProject().ConfigureAwait(false);
+            var rawIssues = await _repository.GetAllIssuesInProject(CustomFields).ConfigureAwait(false);
 
             Console.WriteLine($"Loaded issues (count): {rawIssues.Count}");
 
@@ -66,9 +67,11 @@ namespace JiraToDgmlDump
         {
             var statuses = await _repository.GetStatuses().ConfigureAwait(false);
             var types = await _repository.GetTypes().ConfigureAwait(false);
+            var customFields = await _repository.GetCustomFields().ConfigureAwait(false);
 
             Statuses = new ReadOnlyCollection<JiraNamedObjectLight>(statuses.ToList());
             Types = new ReadOnlyCollection<JiraNamedObjectLight>(types.ToList());
+            CustomFields = new ReadOnlyCollection<JiraNamedObjectLight>(customFields.ToList());
         }
     }
 }
