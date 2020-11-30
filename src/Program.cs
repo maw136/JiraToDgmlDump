@@ -34,22 +34,25 @@ namespace JiraToDgmlDump
 
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
+            var epicTypeId = jiraService.Types.Single(t => t.Name == "Epic").Id;
+
             var graph = BuildGraph(
-                issues.Where(issue => issue.Status.Name != "Cancelled"), 
-                connections, 
-                jiraContext);
+                issues,
+                connections,
+                jiraContext,
+                epicTypeId);
 
             SaveDgml(graph);
         }
 
-        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IJiraContext jiraContext)
+        private static DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IJiraContext jiraContext, string epicTypeId)
         {
 
             var builder = new DgmlBuilder
             {
                 NodeBuilders = new NodeBuilder[]
                 {
-                   MakeNodeBuilder(jiraContext)
+                   MakeNodeBuilder(jiraContext, epicTypeId)
                 },
                 LinkBuilders = new LinkBuilder[]
                 {
@@ -81,7 +84,7 @@ namespace JiraToDgmlDump
             Console.WriteLine($"DGML graph saved at: {path}");
         }
 
-        private static NodeBuilder MakeNodeBuilder(IJiraContext jiraContext)
+        private static NodeBuilder MakeNodeBuilder(IJiraContext jiraContext, string epicTypeId)
         {
             Node BuildNode(IssueLight issue)
             {
@@ -90,7 +93,7 @@ namespace JiraToDgmlDump
                 return new Node
                 {
                     Id = issue.Key,
-                    Label = GetIssueLabel(issue),
+                    Label = GetIssueLabel(issue, epicTypeId),
                     Description = issue.Summary,
                     Reference = $"{jiraContext.Uri}browse/{issue.Key}"
                 };
@@ -99,9 +102,9 @@ namespace JiraToDgmlDump
             return new NodeBuilder<IssueLight>(BuildNode);
         }
 
-        private static string GetIssueLabel(IssueLight issue)
+        private static string GetIssueLabel(IssueLight issue, string epicTypeId)
         {
-            if (issue.Type.Name == "Epic")
+            if (issue.Type.Id == epicTypeId)
             {
                 return $"{issue.Key} {issue.Summary}";
             }

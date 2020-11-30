@@ -13,6 +13,7 @@ namespace JiraToDgmlDump
         private string _project;
         private int _daysBackToFetchIssues;
         private string[] _epics;
+        private string[] _excludedStatuses;
 
         public string Login
         {
@@ -94,6 +95,18 @@ namespace JiraToDgmlDump
                 if (value == _epics)
                     return;
                 _epics = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string[] ExcludedStatuses
+        {
+            get => _excludedStatuses;
+            set
+            {
+                if (Equals(value, _excludedStatuses))
+                    return;
+                _excludedStatuses = value;
                 OnPropertyChanged();
             }
         }

@@ -9,6 +9,7 @@ namespace JiraToDgmlDump
         int DaysBackToFetchIssues { get; }
         string[] Epics { get; }
         string[] LinkTypes { get; set; }
+        string[] ExcludedStatuses { get; }
         bool UseCachedRepo { get; }
     }
 }

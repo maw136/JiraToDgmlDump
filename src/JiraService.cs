@@ -13,8 +13,8 @@ namespace JiraToDgmlDump
         private readonly IJiraRepository _repository;
         private readonly JiraResolver _resolver;
 
-        private IReadOnlyCollection<JiraNamedObjectLight> _statuses;
-        private IReadOnlyCollection<JiraNamedObjectLight> _types;
+        public IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; private set; }
+        public IReadOnlyCollection<JiraNamedObjectLight> Types { get; private set; }
 
         public JiraService(IJiraRepository repository)
         {
@@ -67,9 +67,8 @@ namespace JiraToDgmlDump
             var statuses = await _repository.GetStatuses().ConfigureAwait(false);
             var types = await _repository.GetTypes().ConfigureAwait(false);
 
-            _statuses = new ReadOnlyCollection<JiraNamedObjectLight>(statuses.ToList());
-            _types = new ReadOnlyCollection<JiraNamedObjectLight>(types.ToList());
-
+            Statuses = new ReadOnlyCollection<JiraNamedObjectLight>(statuses.ToList());
+            Types = new ReadOnlyCollection<JiraNamedObjectLight>(types.ToList());
         }
     }
 }

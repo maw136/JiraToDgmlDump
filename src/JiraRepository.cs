@@ -9,6 +9,8 @@ namespace JiraToDgmlDump
 {
     public class JiraRepository : IJiraRepository
     {
+        private const string EpicLinkName = "Epic Link";
+
         private const int MaxIssuesPerRequest = 100;
 
         private readonly Atlassian.Jira.Jira _jira;
@@ -35,16 +37,18 @@ namespace JiraToDgmlDump
         {
             var customFields = await _jira.Fields.GetCustomFieldsAsync(new CustomFieldFetchOptions
                 { ProjectKeys = {_jiraContext.Project}});
-            var epicField = customFields.First(cf => cf.Name == "Epic Link");
+            var epicField = customFields.First(cf => cf.Name == EpicLinkName);
 
-            bool useStatus = false;
+            bool useStatus = _jiraContext.ExcludedStatuses?.LongLength > 0;
             bool useCreated = false;
             bool useEpics = _jiraContext.Epics?.Any() ?? false;
             string epics = string.Join(',', _jiraContext.Epics?.Select(i => $"\"{i}\"") ?? Enumerable.Empty<string>());
+            string excludedStatuses = string.Join(',',
+                _jiraContext.ExcludedStatuses ?? Enumerable.Empty<string>());
 
             var createdFilterPart =
                 $@" AND Created > ""{DateTime.Today.AddDays(-_jiraContext.DaysBackToFetchIssues).Date:yyyy-MM-dd}"" ";
-            var statusFilterPart = " AND Status NOT IN ( 11114, 6, 11110, 10904, 10108, 10109, 11115 ) ";
+            var statusFilterPart = $" AND Status NOT IN ( {excludedStatuses} ) ";
             var epicFilterPart = $@" AND (""{epicField.Name}"" in ({epics}) OR parent in ({epics}) OR id in ({epics}) ) ";
 
 
