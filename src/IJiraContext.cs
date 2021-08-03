@@ -17,6 +17,8 @@ namespace JiraToDgmlDump
         string StoryPointsName { get; }
         bool UseCachedRepo { get; }
         Dictionary<string, StatusColorInfo> StatusColors { get; }
+
+        public string EpicTypeId { get; set; }
     }
 
     public class StatusColorInfo

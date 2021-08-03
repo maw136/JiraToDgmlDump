@@ -17,8 +17,6 @@ namespace JiraToDgmlDump
         public IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; private set; }
         public Task InitializeTask { get; }
 
-        public string EpicTypeId => Types.Single(t => t.Name == _jiraContext.EpicTypeName).Id;
-
         public JiraService(IJiraContext jiraContext, IJiraRepository repository)
         {
             _jiraContext = jiraContext ?? throw new ArgumentNullException(nameof(jiraContext));
@@ -65,13 +63,17 @@ namespace JiraToDgmlDump
 
         private async Task Initialize()
         {
-            var statuses = await _repository.GetStatuses().ConfigureAwait(false);
-            var types = await _repository.GetTypes().ConfigureAwait(false);
-            var customFields = await _repository.GetCustomFields().ConfigureAwait(false);
+            IEnumerable<JiraNamedObjectLight>[] tuple = await Task.WhenAll(
+                _repository.GetStatuses(),
+                _repository.GetTypes(),
+                _repository.GetCustomFields()
+                );
 
-            Statuses = new ReadOnlyCollection<JiraNamedObjectLight>(statuses.ToList());
-            Types = new ReadOnlyCollection<JiraNamedObjectLight>(types.ToList());
-            CustomFields = new ReadOnlyCollection<JiraNamedObjectLight>(customFields.ToList());
+            Statuses = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[0].ToList());
+            Types = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[1].ToList());
+            CustomFields = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[2].ToList());
+
+            _jiraContext.EpicTypeId = Types.Single(t => t.Name == _jiraContext.EpicTypeName).Id;
         }
     }
 }

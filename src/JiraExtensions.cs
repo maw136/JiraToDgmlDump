@@ -14,7 +14,7 @@ namespace JiraToDgmlDump
         private const int MaxUsersPerRequest = 50;
 
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
-            => new JiraUser(user.Key, user.DisplayName);
+            => new(user.Key, user.DisplayName);
 
         public static IssueLight ToIssueLight(this Issue issue, string epicFieldId, string storyPointsFieldId)
         {
@@ -39,10 +39,10 @@ namespace JiraToDgmlDump
             => issue.AdditionalFields.TryGetValue(fieldId, out JToken fieldJToken) ? fieldJToken.Value<T>() : default;
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedEntity entity)
-            => new JiraNamedObjectLight { Id = entity?.Id, Name = entity?.Name };
+            => new() { Id = entity?.Id, Name = entity?.Name };
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedResource resource)
-            => new JiraNamedObjectLight { Id = resource?.Id, Name = resource?.Name };
+            => new() { Id = resource?.Id, Name = resource?.Name };
 
         public static bool ContainsById(this string[] array, JiraNamedObjectLight value)
             => Array.IndexOf(array, value.Id) >= 0;
@@ -80,7 +80,7 @@ namespace JiraToDgmlDump
         }
 
         public static IssueLinkLight ToIssueLinkLight(IssueLink issueLink)
-            => new IssueLinkLight
+            => new()
             {
                 LinkType = issueLink.LinkType.ToNamedObjectLight(),
                 InwardIssueKey = issueLink.InwardIssue.Key.Value,

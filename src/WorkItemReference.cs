@@ -12,7 +12,7 @@ namespace JiraToDgmlDump
         {
             if (string.IsNullOrEmpty(id))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(id));
-            
+
             if (string.IsNullOrEmpty(url))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(url));
 

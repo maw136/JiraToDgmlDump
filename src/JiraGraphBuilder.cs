@@ -14,7 +14,7 @@ namespace JiraToDgmlDump
     {
         private readonly DgmlBuilder _builder;
 
-        public JiraGraphBuilder(IJiraContext jiraContext, string epicTypeId)
+        public JiraGraphBuilder(IJiraContext jiraContext)
         {
             var statusColors = jiraContext.StatusColors;
             (string, Color)[] map = BuildStatusColorMapForCategoryColorAnalysis(statusColors);
@@ -25,7 +25,7 @@ namespace JiraToDgmlDump
             {
                 NodeBuilders = new []
                 {
-                    MakeNodeBuilder(jiraContext, epicTypeId)
+                    MakeNodeBuilder(jiraContext)
                 },
                 LinkBuilders = new []
                 {
@@ -53,7 +53,7 @@ namespace JiraToDgmlDump
             return _builder.Build(issues, connections);
         }
 
-        private NodeBuilder MakeNodeBuilder(IJiraContext jiraContext, string epicTypeId)
+        private NodeBuilder MakeNodeBuilder(IJiraContext jiraContext)
         {
             Node BuildNode(IssueLight issue)
             {
@@ -62,7 +62,7 @@ namespace JiraToDgmlDump
                 return new Node
                 {
                     Id = issue.Key,
-                    Label = GetIssueLabel(issue, epicTypeId),
+                    Label = GetIssueLabel(issue, jiraContext.EpicTypeId),
                     Description = issue.Summary,
                     Reference = $"{jiraContext.Uri}browse/{issue.Key}",
                     CategoryRefs = { new CategoryRef { Ref = StatusRefFromStatus(issue.Status) } }

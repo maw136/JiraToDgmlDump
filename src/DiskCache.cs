@@ -23,9 +23,9 @@ namespace JiraToDgmlDump
         private readonly JObject _jObjectForDump;
         private readonly ConcurrentDictionary<string, JToken> _jObject;
 
-        private readonly object _mutexForDump = new object();
-        private readonly ConcurrentQueue<JToken> _readerWriter = new ConcurrentQueue<JToken>();
-        private readonly AutoResetEvent _syncEvent = new AutoResetEvent(false);
+        private readonly object _mutexForDump = new();
+        private readonly ConcurrentQueue<JToken> _readerWriter = new();
+        private readonly AutoResetEvent _syncEvent = new(false);
         private readonly Task _serializerTask;
         private readonly CancellationTokenSource _tokenSrc;
 
@@ -56,7 +56,7 @@ namespace JiraToDgmlDump
 
                 _jObjectForDump = jObject;
             }
-            catch (JsonReaderException e)
+            catch (JsonReaderException)
             {
                 _jObject = new ConcurrentDictionary<string, JToken>();
                 _jObjectForDump = new JObject();
@@ -76,9 +76,9 @@ namespace JiraToDgmlDump
                 {
                     result = _serializer.Deserialize<T>(reader);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-
+                    // ignored
                 }
             }
 

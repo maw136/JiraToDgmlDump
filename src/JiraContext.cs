@@ -18,5 +18,6 @@ namespace JiraToDgmlDump
         public string StoryPointsName { get; set; }
 
         public string[] LinkTypes { get; set; }
+        public string EpicTypeId { get; set; }
     }
 }

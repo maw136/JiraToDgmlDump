@@ -7,15 +7,15 @@ namespace JiraToDgmlDump
         public WorkItemReference Reference { get; }
 
         public WorkItemType Type {get;}
-        
+
         public string Title { get; }
 
         public string EpicId { get; }
-        
+
         public decimal? StoryPoints { get; }
 
         public string Sprint { get; }
-        
+
         public string Assignee { get; }
 
         public WorkItemReference ParentReference { get; }
@@ -32,7 +32,7 @@ namespace JiraToDgmlDump
         {
             if (string.IsNullOrEmpty(title))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(title));
-            
+
             if (string.IsNullOrEmpty(epicId))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(epicId));
 

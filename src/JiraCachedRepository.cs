@@ -31,13 +31,13 @@ namespace JiraToDgmlDump
             => await _diskCache.Wrap("_linkTypes", _repository.GetLinkTypes).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetStatuses()
-            => await _diskCache.Wrap("_statuses", GetStatuses).ConfigureAwait(false);
+            => await _diskCache.Wrap("_statuses", _repository.GetStatuses).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
-            => await _diskCache.Wrap("_types", GetTypes).ConfigureAwait(false);
+            => await _diskCache.Wrap("_types", _repository.GetTypes).ConfigureAwait(false);
 
         public async Task<IEnumerable<JiraNamedObjectLight>> GetCustomFields()
-            => await _diskCache.Wrap("_customFields", GetCustomFields).ConfigureAwait(false);
+            => await _diskCache.Wrap("_customFields", _repository.GetCustomFields).ConfigureAwait(false);
 
         private async Task<(string, IEnumerable<IssueLinkLight>)> ProcessLinksInParallel(IssueLight rawIssue)
         {

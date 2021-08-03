@@ -10,6 +10,5 @@ namespace JiraToDgmlDump
         IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; }
         IReadOnlyCollection<JiraNamedObjectLight> Types { get; }
         IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; }
-        string EpicTypeId { get; }
     }
 }
