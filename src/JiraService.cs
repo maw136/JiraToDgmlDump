@@ -15,6 +15,7 @@ namespace JiraToDgmlDump
         public IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; private set; }
         public IReadOnlyCollection<JiraNamedObjectLight> Types { get; private set; }
         public IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; private set; }
+        public IReadOnlyCollection<JiraNamedObjectLight> LinkTypes { get; private set; }
         public Task InitializeTask { get; }
 
         public JiraService(IJiraContext jiraContext, IJiraRepository repository)
@@ -66,12 +67,14 @@ namespace JiraToDgmlDump
             IEnumerable<JiraNamedObjectLight>[] tuple = await Task.WhenAll(
                 _repository.GetStatuses(),
                 _repository.GetTypes(),
-                _repository.GetCustomFields()
+                _repository.GetCustomFields(),
+                _repository.GetLinkTypes()
                 );
 
             Statuses = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[0].ToList());
             Types = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[1].ToList());
             CustomFields = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[2].ToList());
+            LinkTypes = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[3].ToList());
 
             _jiraContext.EpicTypeId = Types.Single(t => t.Name == _jiraContext.EpicTypeName).Id;
         }

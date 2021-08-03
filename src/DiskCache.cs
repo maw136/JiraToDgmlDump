@@ -43,7 +43,9 @@ namespace JiraToDgmlDump
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             });
 
-            using var reader = new JsonTextReader(new StreamReader(readStream));
+            bool leaveOpen = ReferenceEquals(readStream, writeStream);
+            using var reader =
+                new JsonTextReader(new StreamReader(readStream, leaveOpen: leaveOpen));
             try
             {
                 var jObject = JObject.Load(reader);

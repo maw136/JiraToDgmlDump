@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlassian.Jira;
@@ -26,14 +27,48 @@ namespace JiraToDgmlDump
                 Created = issue.Created.GetValueOrDefault(DateTime.MinValue),
                 Summary = issue.Summary,
                 Status = issue.Status
-                    .ToNamedObjectLight(), // new JiraNamedObjectLight { Id = issue.Status?.Id, Name = issue.Status?.Name },
+                    .ToNamedObjectLight(),
                 Type = issue.Type
-                    .ToNamedObjectLight(), //new JiraNamedObjectLight { Id = issue.Type?.Id, Name = issue.Type?.Name },
+                    .ToNamedObjectLight(),
                 EpicKey = GetCustomField<string>(issue, epicFieldId),
                 Labels = issue.Labels.ToList(),
-                StoryPoints = GetCustomField<int?>(issue, storyPointsFieldId)
+                StoryPoints = GetCustomField<int?>(issue, storyPointsFieldId),
+                ParentKey = issue.ParentIssueKey,
             };
         }
+
+        public static IssueLight ToIssueLight(this Issue issue, IReadOnlyDictionary<string, IssueLight> parents)
+        {
+            return new IssueLight
+            {
+                Key = issue.Key.Value,
+                Assignee = issue.Assignee,
+                Reporter = issue.Reporter,
+                Created = issue.Created.GetValueOrDefault(DateTime.MinValue),
+                Summary = issue.Summary,
+                Status = issue.Status
+                    .ToNamedObjectLight(),
+                Type = issue.Type
+                    .ToNamedObjectLight(),
+                Labels = issue.Labels.ToList(),
+                StoryPoints = ParseStoryPoints(issue.Summary),
+                ParentKey = issue.ParentIssueKey,
+                EpicKey = parents[issue.ParentIssueKey].EpicKey,
+            };
+        }
+
+        private static readonly Regex StoryPointsRegex = new("[([]\\s?(?<storyPoints>\\d+)\\s?SP\\s?[)\\]]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        private static int? ParseStoryPoints(string issueSummary)
+        {
+            return int.TryParse(
+                StoryPointsRegex.Match(issueSummary)
+                    .Groups["storyPoints"].Value, out int result)
+                ? result
+                : null;
+        }
+
 
         private static T GetCustomField<T>(Issue issue, string fieldId)
             => issue.AdditionalFields.TryGetValue(fieldId, out JToken fieldJToken) ? fieldJToken.Value<T>() : default;

@@ -38,7 +38,7 @@ namespace JiraToDgmlDump
             await jiraService.InitializeTask;
             var (issues, connections) = await jiraService.GetIssuesWithConnections().ConfigureAwait(false);
 
-            Console.WriteLine("Graph or CSV or both");
+            Console.Write("[Graph] or [CSV] or [both], give the type: ");
             var choice = Console.ReadLine()?.ToLowerInvariant();
 
             switch (choice)
@@ -61,13 +61,18 @@ namespace JiraToDgmlDump
         private static async Task BuildCsv(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
         {
             throw new NotImplementedException();
+
+
         }
 
-        private static async Task BuildGraph(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
+        private static Task BuildGraph(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
         {
-            var graphBuilder = new JiraGraphBuilder(jiraContext);
-            var graph = graphBuilder.BuildGraph(issues, connections);
-            SaveDgml(graph);
+            return Task.Run(() =>
+            {
+                var graphBuilder = new JiraGraphBuilder(jiraContext);
+                var graph = graphBuilder.BuildGraph(issues, connections);
+                SaveDgml(graph);
+            });
         }
 
         private static void SaveDgml(DirectedGraph graph)

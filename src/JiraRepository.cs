@@ -54,7 +54,7 @@ namespace JiraToDgmlDump
 
             var searchOptions =
                 new IssueSearchOptions(
-                    $@" Project = ""{_jiraContext.Project}""{(useStatus ? statusFilterPart:"")}{(useEpics ? epicFilterPart:"")}{(useCreated ? createdFilterPart: "")} ")
+                    $@" Project = ""{_jiraContext.Project}""{(useStatus ? statusFilterPart : "")}{(useEpics ? epicFilterPart : "")}{(useCreated ? createdFilterPart : "")} ")
                 {
                     StartAt = 0,
                     FetchBasicFields = false,
@@ -82,9 +82,65 @@ namespace JiraToDgmlDump
             {
                 pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
                 Debug.Assert(pages != null);
-                result.AddRange(pages.Select(i=>i.ToIssueLight(epicField.Id, storyPointsField.Id)));
+                var issuesLight = pages.Select(i => i.ToIssueLight(epicField.Id, storyPointsField.Id)).ToList();
+
+                //foreach (IssueLight issueLight in issuesLight)
+                //{
+                //    var startAt = 0;
+                //    IPagedQueryResult<Issue> subTasksPages = null;
+                //    do
+                //    {
+                //        subTasksPages = await _jira.Issues.GetSubTasksAsync(issueLight.Key, startAt: startAt)
+                //            .ConfigureAwait(false);
+                //        result.AddRange(subTasksPages.Select(subTask=>subTask.ToIssueLight(issueLight, epicField.Id)));
+                //        startAt = Math.Min(startAt + subTasksPages.ItemsPerPage, subTasksPages.TotalItems);
+                //    } while (startAt < subTasksPages.TotalItems);
+
+                //    result.Add(issueLight);
+                //}
+
+                var subTasksForPage = await GetSubTasksAsync(issuesLight);
+
+                result.AddRange(issuesLight);
+                result.AddRange(subTasksForPage);
+
                 searchOptions.StartAt = Math.Min(searchOptions.StartAt + pages.ItemsPerPage, pages.TotalItems);
 
+            } while (searchOptions.StartAt < pages.TotalItems);
+
+            return result;
+        }
+
+        private async Task<IEnumerable<IssueLight>> GetSubTasksAsync(List<IssueLight> issuesLight)
+        {
+            var result = new List<IssueLight>();
+            var issuesLightDict = issuesLight.ToDictionary(i => i.Key);
+            var parents = string.Join(',', issuesLight?.Select(i => $"\"{i.Key}\"") ?? Enumerable.Empty<string>());
+            var searchOptions =
+                 new IssueSearchOptions($@" Project = ""{_jiraContext.Project}"" AND parent in ({parents})")
+                 {
+                     StartAt = 0,
+                     FetchBasicFields = false,
+                     AdditionalFields = new[]
+                     {
+                         "key",
+                         "assignee",
+                         "reporter",
+                         "created",
+                         "summary",
+                         "status",
+                         "issuetype",
+                         "parent",
+                         "labels"
+                     }
+                 };
+
+            IPagedQueryResult<Issue> pages = null;
+            do
+            {
+                pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
+                result.AddRange(pages.Select(subTask => subTask.ToIssueLight(issuesLightDict)));
+                searchOptions.StartAt = Math.Min(searchOptions.StartAt + pages.ItemsPerPage, pages.TotalItems);
             } while (searchOptions.StartAt < pages.TotalItems);
 
             return result;
@@ -96,7 +152,14 @@ namespace JiraToDgmlDump
                 throw new ArgumentNullException(nameof(rawIssue));
 
             var linksRaw = await _jira.Links.GetLinksForIssueAsync(rawIssue.Key).ConfigureAwait(false);
-            return linksRaw.Select(JiraExtensions.ToIssueLinkLight);
+            var result = linksRaw.Select(JiraExtensions.ToIssueLinkLight);
+            if (!string.IsNullOrWhiteSpace(rawIssue.ParentKey))
+                result = result.Prepend(new IssueLinkLight
+                {
+                    InwardIssueKey = rawIssue.ParentKey, OutwardIssueKey = rawIssue.Key,
+                    LinkType = new JiraNamedObjectLight()
+                });
+            return result;
         }
         public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
         {
@@ -119,7 +182,7 @@ namespace JiraToDgmlDump
         public async Task<IEnumerable<JiraNamedObjectLight>> GetCustomFields()
         {
             var customFields = await _jira.Fields.GetCustomFieldsAsync(new CustomFieldFetchOptions
-                {ProjectKeys = {_jiraContext.Project}}).ConfigureAwait(false);
+            { ProjectKeys = { _jiraContext.Project } }).ConfigureAwait(false);
             return customFields?.Select(JiraExtensions.ToNamedObjectLight) ?? Enumerable.Empty<JiraNamedObjectLight>();
         }
     }
