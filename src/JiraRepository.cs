@@ -83,22 +83,6 @@ namespace JiraToDgmlDump
                 pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
                 Debug.Assert(pages != null);
                 var issuesLight = pages.Select(i => i.ToIssueLight(epicField.Id, storyPointsField.Id)).ToList();
-
-                //foreach (IssueLight issueLight in issuesLight)
-                //{
-                //    var startAt = 0;
-                //    IPagedQueryResult<Issue> subTasksPages = null;
-                //    do
-                //    {
-                //        subTasksPages = await _jira.Issues.GetSubTasksAsync(issueLight.Key, startAt: startAt)
-                //            .ConfigureAwait(false);
-                //        result.AddRange(subTasksPages.Select(subTask=>subTask.ToIssueLight(issueLight, epicField.Id)));
-                //        startAt = Math.Min(startAt + subTasksPages.ItemsPerPage, subTasksPages.TotalItems);
-                //    } while (startAt < subTasksPages.TotalItems);
-
-                //    result.Add(issueLight);
-                //}
-
                 var subTasksForPage = await GetSubTasksAsync(issuesLight);
 
                 result.AddRange(issuesLight);
@@ -111,7 +95,7 @@ namespace JiraToDgmlDump
             return result;
         }
 
-        private async Task<IEnumerable<IssueLight>> GetSubTasksAsync(List<IssueLight> issuesLight)
+        private async Task<IEnumerable<IssueLight>> GetSubTasksAsync(IReadOnlyCollection<IssueLight> issuesLight)
         {
             var result = new List<IssueLight>();
             var issuesLightDict = issuesLight.ToDictionary(i => i.Key);
@@ -157,7 +141,7 @@ namespace JiraToDgmlDump
                 result = result.Prepend(new IssueLinkLight
                 {
                     InwardIssueKey = rawIssue.ParentKey, OutwardIssueKey = rawIssue.Key,
-                    LinkType = new JiraNamedObjectLight()
+                    LinkType = new JiraNamedObjectLight{Id = "parent", Name = "Parent"}
                 });
             return result;
         }

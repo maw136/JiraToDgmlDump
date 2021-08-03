@@ -1,6 +1,4 @@
-﻿#define CACHED
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,14 +23,18 @@ namespace JiraToDgmlDump
             var jiraContext = new JiraContext();
             configuration.GetSection("JiraContext").Bind(jiraContext);
 
-#if CACHED
-            await using var file = new FileStream("cache.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite,
-                FileShare.Read, 16384);
-            var jiraRepository =
-                new JiraCachedRepository(new JiraRepository(jiraContext), new DiskCache(file, file, true));
-#else
-            var jiraRepository = new JiraRepository(jiraContext);
-#endif
+            IJiraRepository jiraRepository;
+            if (jiraContext.UseCachedRepo)
+            {
+                await using var file = new FileStream("cache.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite,
+                    FileShare.Read, 16384);
+                jiraRepository =
+                   new JiraCachedRepository(new JiraRepository(jiraContext), new DiskCache(file, file, true));
+            }
+            else
+            {
+                jiraRepository = new JiraRepository(jiraContext);
+            }
 
             var jiraService = new JiraService(jiraContext, jiraRepository);
             await jiraService.InitializeTask;
@@ -60,7 +62,6 @@ namespace JiraToDgmlDump
 
         private static async Task BuildCsv(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
         {
-            throw new NotImplementedException();
 
 
         }

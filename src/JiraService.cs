@@ -77,6 +77,8 @@ namespace JiraToDgmlDump
             LinkTypes = new ReadOnlyCollection<JiraNamedObjectLight>(tuple[3].ToList());
 
             _jiraContext.EpicTypeId = Types.Single(t => t.Name == _jiraContext.EpicTypeName).Id;
+            _jiraContext.StoryTypeId = Types.Single(t => t.Name == _jiraContext.StoryTypeName).Id;
+            _jiraContext.SubTaskTypeId = Types.Single(t => t.Name == _jiraContext.SubTaskTypeName).Id;
         }
     }
 }

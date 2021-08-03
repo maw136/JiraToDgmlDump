@@ -14,10 +14,13 @@ namespace JiraToDgmlDump
         public string[] Epics { get; set; }
         public string[] ExcludedStatuses { get; set; }
         public string EpicTypeName { get; set; }
+        public string StoryTypeName { get; set; }
+        public string SubTaskTypeName { get; set; }
         public string EpicLinkName { get; set; }
         public string StoryPointsName { get; set; }
 
-        public string[] LinkTypes { get; set; }
         public string EpicTypeId { get; set; }
+        public string StoryTypeId { get; set; }
+        public string SubTaskTypeId { get; set; }
     }
 }
