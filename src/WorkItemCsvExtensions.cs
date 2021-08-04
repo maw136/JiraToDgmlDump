@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace JiraToDgmlDump
 {
@@ -25,6 +26,7 @@ namespace JiraToDgmlDump
                 workItem.StoryPoints,
                 workItem.Sprint,
                 workItem.Assignee,
+                workItem.Status,
                 ParentId = workItem.ParentReference?.Id,
                 ParentUrl = workItem.ParentReference?.Url
             };
@@ -60,7 +62,8 @@ namespace JiraToDgmlDump
             if (textWriter == null)
                 throw new ArgumentNullException(nameof(textWriter));
 
-            await using var csvWriter = new CsvWriter(textWriter, CultureInfo.InvariantCulture);
+
+            await using var csvWriter = new CsvWriter(textWriter, new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" });
             await csvWriter.WriteRecordsAsync(workItems.Select(ToRow));
         }
     }

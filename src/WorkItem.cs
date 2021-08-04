@@ -18,6 +18,8 @@ namespace JiraToDgmlDump
 
         public string Assignee { get; }
 
+        public string Status { get; }
+
         public WorkItemReference ParentReference { get; }
 
         public WorkItem(
@@ -28,6 +30,7 @@ namespace JiraToDgmlDump
             decimal? storyPoints = null,
             string sprint = null,
             string assignee = null,
+            string status = null,
             WorkItemReference parentReference = null)
         {
             if (string.IsNullOrEmpty(title))
@@ -43,6 +46,7 @@ namespace JiraToDgmlDump
             Sprint = sprint;
             EpicId = epicId;
             Assignee = assignee;
+            Status = status;
             ParentReference = parentReference;
         }
     }

@@ -77,7 +77,7 @@ namespace JiraToDgmlDump
                 if (string.IsNullOrWhiteSpace(issue.EpicKey))
                     continue;
                 yield return new WorkItem(jiraContext.MakeJiraWorkItemReference(issue.Key), type, issue.Summary,
-                    issue.EpicKey, issue.StoryPoints, issue.Sprint, issue.Assignee, parent);
+                    issue.EpicKey, issue.StoryPoints, issue.Sprint, issue.Assignee, issue.Status.Name, parent);
             }
         }
 
