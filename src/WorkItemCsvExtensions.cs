@@ -62,7 +62,6 @@ namespace JiraToDgmlDump
             if (textWriter == null)
                 throw new ArgumentNullException(nameof(textWriter));
 
-
             await using var csvWriter = new CsvWriter(textWriter, new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" });
             await csvWriter.WriteRecordsAsync(workItems.Select(ToRow));
         }
