@@ -64,7 +64,7 @@ namespace JiraToDgmlDump
                     Id = issue.Key,
                     Label = GetIssueLabel(issue, jiraContext.EpicTypeId),
                     Description = issue.Summary,
-                    Reference = $"{jiraContext.Uri}browse/{issue.Key}",
+                    Reference = jiraContext.MakeJiraReference(issue.Key),
                     CategoryRefs = { new CategoryRef { Ref = StatusRefFromStatus(issue.Status) } }
                 };
             }

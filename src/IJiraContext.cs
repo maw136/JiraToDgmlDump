@@ -14,9 +14,11 @@ namespace JiraToDgmlDump
         string EpicTypeName { get; }
         string StoryTypeName { get; }
         string SubTaskTypeName { get; }
-        string EpicLinkName { get; }
-        string StoryPointsName { get; }
+        string SprintFieldName { get; }
+        string EpicLinkFieldName { get; }
+        string StoryPointsFieldName { get; }
         bool UseCachedRepo { get; }
+        bool WaitForData { get; }
         Dictionary<string, StatusColorInfo> StatusColors { get; }
 
         public string EpicTypeId { get; set; }

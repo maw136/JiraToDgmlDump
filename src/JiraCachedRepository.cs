@@ -15,34 +15,25 @@ namespace JiraToDgmlDump
             _diskCache = diskCache;
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
-            => await _diskCache.Wrap("GetIssues", () => _repository.GetAllIssuesInProject(customFields)).ConfigureAwait(false);
+        public Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
+            => _diskCache.Wrap("GetIssues", () => _repository.GetAllIssuesInProject(customFields));
 
-        public async Task<IList<JiraUser>> GetAllUsersInProject()
-            => await _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject).ConfigureAwait(false);
+        public Task<IList<JiraUser>> GetAllUsersInProject()
+            => _diskCache.Wrap("GetUsers", _repository.GetAllUsersInProject);
 
-        public async Task<IEnumerable<IssueLinkLight>> GetLinks(IssueLight rawIssue)
-            => await _diskCache.Wrap($"{ rawIssue.Key}_links", () => _repository.GetLinks(rawIssue)).ConfigureAwait(false);
+        public Task<IEnumerable<IssueLinkLight>> GetLinks(IssueLight rawIssue)
+            => _diskCache.Wrap($"{rawIssue.Key}_links", () => _repository.GetLinks(rawIssue));
 
-        public async Task<IEnumerable<(string, IEnumerable<IssueLinkLight>)>> GetAllLinks(IList<IssueLight> rawIssues)
-            => await Task.WhenAll(rawIssues/*.AsParallel()*/.Select(ProcessLinksInParallel)).ConfigureAwait(false);
+        public Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
+            => _diskCache.Wrap("_linkTypes", _repository.GetLinkTypes);
 
-        public async Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes()
-            => await _diskCache.Wrap("_linkTypes", _repository.GetLinkTypes).ConfigureAwait(false);
+        public Task<IEnumerable<JiraNamedObjectLight>> GetStatuses()
+            => _diskCache.Wrap("_statuses", _repository.GetStatuses);
 
-        public async Task<IEnumerable<JiraNamedObjectLight>> GetStatuses()
-            => await _diskCache.Wrap("_statuses", _repository.GetStatuses).ConfigureAwait(false);
+        public Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
+            => _diskCache.Wrap("_types", _repository.GetTypes);
 
-        public async Task<IEnumerable<JiraNamedObjectLight>> GetTypes()
-            => await _diskCache.Wrap("_types", _repository.GetTypes).ConfigureAwait(false);
-
-        public async Task<IEnumerable<JiraNamedObjectLight>> GetCustomFields()
-            => await _diskCache.Wrap("_customFields", _repository.GetCustomFields).ConfigureAwait(false);
-
-        private async Task<(string, IEnumerable<IssueLinkLight>)> ProcessLinksInParallel(IssueLight rawIssue)
-        {
-            var links = await GetLinks(rawIssue).ConfigureAwait(false);
-            return (rawIssue.Key, links);
-        }
+        public Task<IEnumerable<JiraNamedObjectLight>> GetCustomFields()
+            => _diskCache.Wrap("_customFields", _repository.GetCustomFields);
     }
 }

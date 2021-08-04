@@ -16,5 +16,6 @@ namespace JiraToDgmlDump
         public List<string> Labels { get; set; }
         public int? StoryPoints { get; set; }
         public string ParentKey { get; set; }
+        public string Sprint { get; set; }
     }
 }

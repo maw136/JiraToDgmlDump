@@ -17,7 +17,7 @@ namespace JiraToDgmlDump
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
             => new(user.Key, user.DisplayName);
 
-        public static IssueLight ToIssueLight(this Issue issue, string epicFieldId, string storyPointsFieldId)
+        public static IssueLight ToIssueLight(this Issue issue, string epicFieldId, string storyPointsFieldId, string sprintFieldId)
         {
             return new IssueLight
             {
@@ -34,7 +34,16 @@ namespace JiraToDgmlDump
                 Labels = issue.Labels.ToList(),
                 StoryPoints = GetCustomField<int?>(issue, storyPointsFieldId),
                 ParentKey = issue.ParentIssueKey,
+                Sprint = ParseSprint(GetCustomFieldArray<string>(issue, sprintFieldId)),
             };
+        }
+
+        private static readonly Regex SprintObjectRegex = new(".+@.+\\[.+,name=(?<sprint>[^,]+),.+]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        private static string ParseSprint(IEnumerable<string> sprintField)
+        {
+            return SprintObjectRegex.Match(sprintField.FirstOrDefault() ?? string.Empty).Groups["sprint"].Value;
         }
 
         public static IssueLight ToIssueLight(this Issue issue, IReadOnlyDictionary<string, IssueLight> parents)
@@ -54,6 +63,7 @@ namespace JiraToDgmlDump
                 StoryPoints = ParseStoryPoints(issue.Summary),
                 ParentKey = issue.ParentIssueKey,
                 EpicKey = parents[issue.ParentIssueKey].EpicKey,
+                Sprint = parents[issue.ParentIssueKey].Sprint,
             };
         }
 
@@ -72,6 +82,9 @@ namespace JiraToDgmlDump
 
         private static T GetCustomField<T>(Issue issue, string fieldId)
             => issue.AdditionalFields.TryGetValue(fieldId, out JToken fieldJToken) ? fieldJToken.Value<T>() : default;
+
+        private static IEnumerable<T> GetCustomFieldArray<T>(Issue issue, string fieldId)
+            => issue.AdditionalFields.TryGetValue(fieldId, out JToken fieldJToken) ? fieldJToken.ToObject<T[]>() ?? Array.Empty<T>() : Array.Empty<T>();
 
         public static JiraNamedObjectLight ToNamedObjectLight(this JiraNamedEntity entity)
             => new() { Id = entity?.Id, Name = entity?.Name };
@@ -121,5 +134,24 @@ namespace JiraToDgmlDump
                 InwardIssueKey = issueLink.InwardIssue.Key.Value,
                 OutwardIssueKey = issueLink.OutwardIssue.Key.Value
             };
+
+        public static string MakeJiraReference(this IJiraContext jiraContext, string key)
+        {
+            return $"{jiraContext.Uri}browse/{key}";
+        }
+
+        public static WorkItemReference MakeJiraWorkItemReference(this IJiraContext jiraContext, string key)
+        {
+            return new WorkItemReference(key, MakeJiraReference(jiraContext, key));
+        }
+
+        public static WorkItemType ToWorkItemType(this IJiraContext jiraContext, JiraNamedObjectLight type)
+        {
+            if (type.Id == jiraContext.SubTaskTypeId)
+                return WorkItemType.SubTask;
+            if (type.Id == jiraContext.StoryTypeId)
+                return WorkItemType.UserStory;
+            return WorkItemType.Other;
+        }
     }
 }

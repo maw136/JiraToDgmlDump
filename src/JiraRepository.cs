@@ -19,8 +19,15 @@ namespace JiraToDgmlDump
             // RAII
             _jiraContext = jiraContext;
 
-            _jira = Atlassian.Jira.Jira.CreateRestClient(
-                jiraContext.Uri, jiraContext.Login, jiraContext.Password);
+            try
+            {
+                _jira = Atlassian.Jira.Jira.CreateRestClient(
+                    jiraContext.Uri, jiraContext.Login, jiraContext.Password);
+            }
+            finally
+            {
+
+            }
 
             _jira.Issues.MaxIssuesPerRequest = MaxIssuesPerRequest;
         }
@@ -36,8 +43,9 @@ namespace JiraToDgmlDump
             if (customFields == null)
                 throw new ArgumentNullException(nameof(customFields));
 
-            var epicField = customFields.First(cf => cf.Name == _jiraContext.EpicLinkName);
-            var storyPointsField = customFields.First(cf => cf.Name == _jiraContext.StoryPointsName);
+            var sprintField = customFields.First(cf => cf.Name == _jiraContext.SprintFieldName);
+            var epicField = customFields.First(cf => cf.Name == _jiraContext.EpicLinkFieldName);
+            var storyPointsField = customFields.First(cf => cf.Name == _jiraContext.StoryPointsFieldName);
 
             bool useStatus = _jiraContext.ExcludedStatuses?.LongLength > 0;
             bool useCreated = false;
@@ -67,6 +75,7 @@ namespace JiraToDgmlDump
                         "summary",
                         "status",
                         "issuetype",
+                        sprintField.Id,
                         epicField.Id,
                         storyPointsField.Id,
                         "parent",
@@ -82,7 +91,7 @@ namespace JiraToDgmlDump
             {
                 pages = await _jira.Issues.GetIssuesFromJqlAsync(searchOptions).ConfigureAwait(false);
                 Debug.Assert(pages != null);
-                var issuesLight = pages.Select(i => i.ToIssueLight(epicField.Id, storyPointsField.Id)).ToList();
+                var issuesLight = pages.Select(i => i.ToIssueLight(epicField.Id, storyPointsField.Id, sprintField.Id)).ToList();
                 var subTasksForPage = await GetSubTasksAsync(issuesLight);
 
                 result.AddRange(issuesLight);

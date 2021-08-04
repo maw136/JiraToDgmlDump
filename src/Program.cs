@@ -20,16 +20,16 @@ namespace JiraToDgmlDump
                 .AddEnvironmentVariables()
                 .Build();
 
-            var jiraContext = new JiraContext();
+            IJiraContext jiraContext = new JiraContext();
             configuration.GetSection("JiraContext").Bind(jiraContext);
 
             IJiraRepository jiraRepository;
             if (jiraContext.UseCachedRepo)
             {
-                await using var file = new FileStream("cache.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite,
+                var file = new FileStream("cache.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite,
                     FileShare.Read, 16384);
                 jiraRepository =
-                   new JiraCachedRepository(new JiraRepository(jiraContext), new DiskCache(file, file, true));
+                   new JiraCachedRepository(new JiraRepository(jiraContext), new DiskCache(file, file, jiraContext.WaitForData));
             }
             else
             {
@@ -49,21 +49,36 @@ namespace JiraToDgmlDump
                     await BuildGraph(jiraContext, issues, connections);
                     break;
                 case "csv":
-                    await BuildCsv(jiraContext, issues, connections);
+                    await BuildCsv(jiraContext, issues);
                     break;
                 case "both":
                     await Task.WhenAll(
                         BuildGraph(jiraContext, issues, connections),
-                        BuildCsv(jiraContext, issues, connections)
+                        BuildCsv(jiraContext, issues)
                         );
                     break;
             }
         }
 
-        private static async Task BuildCsv(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
+        private static Task BuildCsv(IJiraContext jiraContext, IEnumerable<IssueLight> issues)
         {
+            var workItems = ToWorkItems(jiraContext, issues);
+            return SaveCsv(workItems);
+        }
 
-
+        private static IEnumerable<WorkItem> ToWorkItems(IJiraContext jiraContext, IEnumerable<IssueLight> issues)
+        {
+            foreach (IssueLight issue in issues)
+            {
+                var type = jiraContext.ToWorkItemType(issue.Type);
+                var parent = issue.Type.Id == jiraContext.SubTaskTypeId
+                    ? jiraContext.MakeJiraWorkItemReference(issue.ParentKey)
+                    : null;
+                if (string.IsNullOrWhiteSpace(issue.EpicKey))
+                    continue;
+                yield return new WorkItem(jiraContext.MakeJiraWorkItemReference(issue.Key), type, issue.Summary,
+                    issue.EpicKey, issue.StoryPoints, issue.Sprint, issue.Assignee, parent);
+            }
         }
 
         private static Task BuildGraph(IJiraContext jiraContext, IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
@@ -74,6 +89,14 @@ namespace JiraToDgmlDump
                 var graph = graphBuilder.BuildGraph(issues, connections);
                 SaveDgml(graph);
             });
+        }
+
+        private static async Task SaveCsv(IEnumerable<WorkItem> workItems)
+        {
+            var name = "jira.csv";
+            await workItems.SaveToCsv(name).ConfigureAwait(false);
+            var path = Path.Combine(Environment.CurrentDirectory, name);
+            Console.WriteLine($"CSV saved at: {path}");
         }
 
         private static void SaveDgml(DirectedGraph graph)
