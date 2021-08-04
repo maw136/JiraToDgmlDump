@@ -36,8 +36,8 @@ namespace JiraToDgmlDump
             Console.WriteLine($"Loaded issues (count): {rawIssues.Count}");
 
             var getLinks = new TransformManyBlock<IssueLight, IssueLinkLight>(
-                async i => await _repository.GetLinks(i),
-                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 4 }
+                i => _repository.GetLinks(i),
+                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount/4 }
                 );
             var collect = new ActionBlock<IssueLinkLight>(
                 i => concurrentBag.Add(i),

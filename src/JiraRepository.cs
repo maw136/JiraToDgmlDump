@@ -92,11 +92,12 @@ namespace JiraToDgmlDump
                         epicField.Id,
                         storyPointsField.Id,
                         "parent",
-                        "labels"
+                        "labels",
+                        "issuelinks"
                     }
                 };
 
-            Console.WriteLine($"JQL: {searchOptions.Jql}");
+            Debug.WriteLine($"JQL: {searchOptions.Jql}");
 
             var result = new List<IssueLight>();
             IPagedQueryResult<Issue> pages = null;
@@ -119,9 +120,8 @@ namespace JiraToDgmlDump
 
         private async Task<IEnumerable<IssueLight>> GetSubTasksAsync(IReadOnlyCollection<IssueLight> issuesLight)
         {
-            var result = new List<IssueLight>();
             var issuesLightDict = issuesLight.ToDictionary(i => i.Key);
-            var parents = string.Join(',', issuesLight?.Select(i => $"\"{i.Key}\"") ?? Enumerable.Empty<string>());
+            var parents = string.Join(',', issuesLight.Select(i => $"\"{i.Key}\""));
             var searchOptions =
                  new IssueSearchOptions($@" Project = ""{_jiraContext.Project}"" AND parent in ({parents})")
                  {
@@ -141,6 +141,9 @@ namespace JiraToDgmlDump
                      }
                  };
 
+            Debug.WriteLine($"JQL: {searchOptions.Jql}");
+
+            var result = new List<IssueLight>();
             IPagedQueryResult<Issue> pages = null;
             do
             {
