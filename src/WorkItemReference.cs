@@ -2,11 +2,11 @@ using System;
 
 namespace JiraToDgmlDump
 {
-    public class WorkItemReference
+    public record WorkItemReference
     {
-        public string Id { get; }
+        public string Id { get; init; }
 
-        public string Url { get; }
+        public string Url { get; init; }
 
         public WorkItemReference(string id, string url)
         {

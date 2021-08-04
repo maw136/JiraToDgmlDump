@@ -4,12 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlassian.Jira;
+using RestSharp;
 
 namespace JiraToDgmlDump
 {
     public class JiraRepository : IJiraRepository
     {
         private const int MaxIssuesPerRequest = 100;
+        private const int MaxUsersPerRequest = 50;
 
         private readonly Atlassian.Jira.Jira _jira;
         private readonly IJiraContext _jiraContext;
@@ -18,27 +20,38 @@ namespace JiraToDgmlDump
         {
             // RAII
             _jiraContext = jiraContext;
-
-            try
-            {
-                _jira = Atlassian.Jira.Jira.CreateRestClient(
-                    jiraContext.Uri, jiraContext.Login, jiraContext.Password);
-            }
-            finally
-            {
-
-            }
-
+            _jira = Atlassian.Jira.Jira.CreateRestClient(jiraContext.Uri, jiraContext.Login, jiraContext.Password);
             _jira.Issues.MaxIssuesPerRequest = MaxIssuesPerRequest;
         }
 
         public async Task<IList<JiraUser>> GetAllUsersInProject()
         {
-            var rawUsers = await _jira.GetAllUsers(_jiraContext).ConfigureAwait(false);
-            return rawUsers as IList<JiraUser> ?? rawUsers?.ToList() ?? new List<JiraUser>();
+            var url = "rest/api/2/user/assignable/multiProjectSearch";
+            int startAt = 0;
+            int loaded = 0;
+            var fullResult = new List<JiraUser>();
+
+            do
+            {
+                var page = await _jira.RestClient.ExecuteRequestAsync<IEnumerable<Atlassian.Jira.JiraUser>>(
+                    Method.GET,
+                    $"{url}?projectKeys={_jiraContext.Project}&startAt={startAt}&maxResults={MaxUsersPerRequest}").ConfigureAwait(false);
+
+                if (page == null)
+                    break;
+
+                var previousCount = fullResult.Count;
+                fullResult.AddRange(page.Select(JiraExtensions.ToJiraUser));
+                loaded = fullResult.Count - previousCount;
+
+                startAt += loaded;
+
+            } while (loaded >= MaxUsersPerRequest);
+
+            return fullResult;
         }
 
-        public async Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
+        public async Task<IReadOnlyCollection<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
         {
             if (customFields == null)
                 throw new ArgumentNullException(nameof(customFields));
@@ -149,8 +162,9 @@ namespace JiraToDgmlDump
             if (!string.IsNullOrWhiteSpace(rawIssue.ParentKey))
                 result = result.Prepend(new IssueLinkLight
                 {
-                    InwardIssueKey = rawIssue.ParentKey, OutwardIssueKey = rawIssue.Key,
-                    LinkType = new JiraNamedObjectLight{Id = "parent", Name = "Parent"}
+                    InwardIssueKey = rawIssue.ParentKey,
+                    OutwardIssueKey = rawIssue.Key,
+                    LinkType = new JiraNamedObjectLight { Id = "parent", Name = "Parent" }
                 });
             return result;
         }

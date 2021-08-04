@@ -2,35 +2,38 @@ using System;
 
 namespace JiraToDgmlDump
 {
-    public class WorkItem
+    public record WorkItem
     {
-        public WorkItemReference Reference { get; }
+        public WorkItemReference Reference { get; init; }
 
-        public WorkItemType Type {get;}
+        public WorkItemType Type {get; init; }
 
-        public string Title { get; }
+        public string Title { get; init; }
 
-        public string EpicId { get; }
+        public string EpicId { get; init; }
 
-        public decimal? StoryPoints { get; }
+        public int? StoryPoints { get; init; }
 
-        public string Sprint { get; }
+        public string Sprint { get; init; }
 
-        public string Assignee { get; }
+        public string Assignee { get; init; }
 
-        public string Status { get; }
+        public string Status { get; init; }
 
-        public WorkItemReference ParentReference { get; }
+        public string ParentTitle { get; init; }
+
+        public WorkItemReference ParentReference { get; init; }
 
         public WorkItem(
             WorkItemReference reference,
             WorkItemType type,
             string title,
             string epicId,
-            decimal? storyPoints = null,
+            int? storyPoints = null,
             string sprint = null,
             string assignee = null,
             string status = null,
+            string parentTitle = null,
             WorkItemReference parentReference = null)
         {
             if (string.IsNullOrEmpty(title))
@@ -47,6 +50,7 @@ namespace JiraToDgmlDump
             EpicId = epicId;
             Assignee = assignee;
             Status = status;
+            ParentTitle = parentTitle;
             ParentReference = parentReference;
         }
     }

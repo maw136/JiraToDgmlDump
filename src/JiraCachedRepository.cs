@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace JiraToDgmlDump
@@ -15,7 +14,7 @@ namespace JiraToDgmlDump
             _diskCache = diskCache;
         }
 
-        public Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
+        public Task<IReadOnlyCollection<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields)
             => _diskCache.Wrap("GetIssues", () => _repository.GetAllIssuesInProject(customFields));
 
         public Task<IList<JiraUser>> GetAllUsersInProject()

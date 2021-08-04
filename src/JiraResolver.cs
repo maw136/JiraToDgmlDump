@@ -146,11 +146,11 @@ namespace JiraToDgmlDump
         //        => users.SingleOrDefault(u => u.Key == id) ?? new Atlassian.Jira.JiraUser(id, id);
 
 
-        public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>
-            Resolve(IEnumerable<(IssueLight issues, IEnumerable<IssueLinkLight>)> connections, IList<JiraUser> users)
-        {
-
-            throw new NotImplementedException();
-        }
+        //public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>
+        //    Resolve(IEnumerable<(IssueLight issues, IEnumerable<IssueLinkLight>)> connections, IList<JiraUser> users)
+        //{
+        //
+        //    throw new NotImplementedException();
+        //}
     }
 }

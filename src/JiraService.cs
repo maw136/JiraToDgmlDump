@@ -26,7 +26,7 @@ namespace JiraToDgmlDump
             InitializeTask = Initialize();
         }
 
-        public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>
+        public async Task<(IReadOnlyCollection<IssueLight>, IReadOnlyCollection<IssueLinkLight>)>
             GetIssuesWithConnections()
         {
             await InitializeTask.ConfigureAwait(false);
@@ -59,8 +59,32 @@ namespace JiraToDgmlDump
             return (rawIssues, concurrentBag);
         }
 
-        public async Task<IEnumerable<JiraUser>> GetUsers()
-            => await _repository.GetAllUsersInProject().ConfigureAwait(false);
+        public async Task<IReadOnlyDictionary<string, JiraUser>> GetUsers()
+        {
+            var  usersRaw = await _repository.GetAllUsersInProject().ConfigureAwait(false);
+            return usersRaw.Distinct(JiraUserDedupComparer.Instance).ToDictionary(u => u.Key);
+        }
+
+        private class JiraUserDedupComparer : IEqualityComparer<JiraUser>
+        {
+            internal static readonly JiraUserDedupComparer Instance = new();
+
+            public bool Equals(JiraUser x, JiraUser y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+                if (ReferenceEquals(x, null))
+                    return false;
+                if (ReferenceEquals(y, null))
+                    return false;
+                return x.Key == y.Key;
+            }
+
+            public int GetHashCode(JiraUser obj)
+            {
+                return obj.Key != null ? obj.Key.GetHashCode() : 0;
+            }
+        }
 
         private async Task Initialize()
         {

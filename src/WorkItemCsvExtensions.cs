@@ -11,27 +11,6 @@ namespace JiraToDgmlDump
 {
     public static class WorkItemCsvExtensions
     {
-        public static object ToRow(this WorkItem workItem)
-        {
-            if (workItem == null)
-                throw new ArgumentNullException(nameof(workItem));
-
-            return new
-            {
-                workItem.Reference.Id,
-                workItem.Reference.Url,
-                workItem.Type,
-                workItem.Title,
-                workItem.EpicId,
-                workItem.StoryPoints,
-                workItem.Sprint,
-                workItem.Assignee,
-                workItem.Status,
-                ParentId = workItem.ParentReference?.Id,
-                ParentUrl = workItem.ParentReference?.Url
-            };
-        }
-
         public static async Task<string> SaveToCsv(this IEnumerable<WorkItem> workItems)
         {
             if (workItems == null)
@@ -63,7 +42,7 @@ namespace JiraToDgmlDump
                 throw new ArgumentNullException(nameof(textWriter));
 
             await using var csvWriter = new CsvWriter(textWriter, new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" });
-            await csvWriter.WriteRecordsAsync(workItems.Select(ToRow));
+            await csvWriter.WriteRecordsAsync(workItems.Select(WorkItemExtensions.ToRow));
         }
     }
 }

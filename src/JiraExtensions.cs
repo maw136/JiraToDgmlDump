@@ -12,8 +12,6 @@ namespace JiraToDgmlDump
 {
     internal static class JiraExtensions
     {
-        private const int MaxUsersPerRequest = 50;
-
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
             => new(user.Key, user.DisplayName);
 
@@ -94,38 +92,6 @@ namespace JiraToDgmlDump
 
         public static bool ContainsById(this string[] array, JiraNamedObjectLight value)
             => Array.IndexOf(array, value.Id) >= 0;
-
-        public static async Task<IEnumerable<JiraUser>> GetAllUsers(this Atlassian.Jira.Jira jira,
-            IJiraContext jiraContext,
-            CancellationToken token = default)
-        {
-            var url = "rest/api/2/user/assignable/multiProjectSearch";
-            int startAt = 0;
-            int loaded = 0;
-            var fullResult = new List<JiraUser>();
-            bool hasMoreData = false;
-
-            do
-            {
-                var page = await jira.RestClient.ExecuteRequestAsync<IEnumerable<Atlassian.Jira.JiraUser>>(
-                    Method.GET,
-                    $"{url}?projectKeys={jiraContext.Project}&startAt={startAt}&maxResults={MaxUsersPerRequest}",
-                    null,
-                    token).ConfigureAwait(false);
-
-                if (page == null)
-                    break;
-
-                var previousCount = fullResult.Count;
-                fullResult.AddRange(page.Select(ToJiraUser));
-                loaded = fullResult.Count - previousCount;
-
-                startAt += loaded;
-
-            } while (loaded >= MaxUsersPerRequest);
-
-            return fullResult;
-        }
 
         public static IssueLinkLight ToIssueLinkLight(IssueLink issueLink)
             => new()

@@ -48,7 +48,7 @@ namespace JiraToDgmlDump
                 from valueStatusId in statusColorInfo.Value.StatusIds
                 select (valueStatusId, Color.FromName(statusColorInfo.Value.Color))).ToArray();
 
-        public DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections)
+        public DirectedGraph BuildGraph(IEnumerable<IssueLight> issues, IEnumerable<IssueLinkLight> connections, IReadOnlyDictionary<string, JiraUser> usersLookup)
         {
             return _builder.Build(issues, connections);
         }

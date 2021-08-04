@@ -5,7 +5,7 @@ namespace JiraToDgmlDump
 {
     public interface IJiraRepository
     {
-        Task<IList<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields);
+        Task<IReadOnlyCollection<IssueLight>> GetAllIssuesInProject(IReadOnlyCollection<JiraNamedObjectLight> customFields);
         Task<IList<JiraUser>> GetAllUsersInProject();
         Task<IEnumerable<IssueLinkLight>> GetLinks(IssueLight rawIssue);
         Task<IEnumerable<JiraNamedObjectLight>> GetLinkTypes();

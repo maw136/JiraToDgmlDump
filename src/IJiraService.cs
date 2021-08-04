@@ -5,8 +5,8 @@ namespace JiraToDgmlDump
 {
     public interface IJiraService
     {
-        Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)> GetIssuesWithConnections();
-        Task<IEnumerable<JiraUser>> GetUsers();
+        Task<(IReadOnlyCollection<IssueLight>, IReadOnlyCollection<IssueLinkLight>)> GetIssuesWithConnections();
+        Task<IReadOnlyDictionary<string, JiraUser>> GetUsers();
         IReadOnlyCollection<JiraNamedObjectLight> Statuses { get; }
         IReadOnlyCollection<JiraNamedObjectLight> Types { get; }
         IReadOnlyCollection<JiraNamedObjectLight> CustomFields { get; }
