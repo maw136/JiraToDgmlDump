@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace JiraToDgmlDump
 {
     public sealed class JiraResolver
@@ -116,7 +112,7 @@ namespace JiraToDgmlDump
         //            }
 
         //            var user = GetUserForPlanItem(previousAssignee, users);
-        //            var newIssuePlanItem = new IssuePlanItem(rawIssue.Key, rawIssue.Summary, previousMoment, moment, previousStatus, user);
+        //            var newIssuePlanItem = new IssuePlanItem(rawIssue.Id, rawIssue.Summary, previousMoment, moment, previousStatus, user);
         //            planItems.Add(newIssuePlanItem);
 
         //            previousMoment = moment;
@@ -129,7 +125,7 @@ namespace JiraToDgmlDump
 
         //    private IEnumerable<(DateTime moment, string lastAssignee, string lastStatus)> GenerateAssigneeStatusPairs(
         //        IEnumerable<IGrouping<DateTime, (DateTime created, IssueChangeLogItem changeLogItem)>> groupsByMoment)
-        //        => groupsByMoment.OrderBy(i => i.Key).Select(current =>
+        //        => groupsByMoment.OrderBy(i => i.Id).Select(current =>
         //        {
         //            var allInTheGroupOrdered = current.OrderBy(i => i.created).Select(p => p.changeLogItem).ToList();
 
@@ -139,11 +135,11 @@ namespace JiraToDgmlDump
         //            Debug.Assert(lastStatus != null || lastAssignee != null,
         //                "Both conditions should never be false at the same time");
 
-        //            return (current.Key, lastAssignee?.ToId, lastStatus?.ToValue);
+        //            return (current.Id, lastAssignee?.ToId, lastStatus?.ToValue);
         //        });
 
         //    private Atlassian.Jira.JiraUser GetUserForPlanItem(string id, IList<Atlassian.Jira.JiraUser> users)
-        //        => users.SingleOrDefault(u => u.Key == id) ?? new Atlassian.Jira.JiraUser(id, id);
+        //        => users.SingleOrDefault(u => u.Id == id) ?? new Atlassian.Jira.JiraUser(id, id);
 
 
         //public async Task<(IEnumerable<IssueLight>, IEnumerable<IssueLinkLight>)>

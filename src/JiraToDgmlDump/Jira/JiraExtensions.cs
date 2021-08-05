@@ -2,18 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Atlassian.Jira;
 using Newtonsoft.Json.Linq;
-using RestSharp;
 
 namespace JiraToDgmlDump
 {
     internal static class JiraExtensions
     {
         public static JiraUser ToJiraUser(this Atlassian.Jira.JiraUser user)
-            => new(user.Key, user.DisplayName);
+            => new() { Key = user.Key, Name = user.Username, DisplayName = user.DisplayName };
 
         public static IssueLight ToIssueLight(this Issue issue, string epicFieldId, string storyPointsFieldId, string sprintFieldId)
         {

@@ -26,8 +26,6 @@ namespace JiraToDgmlDump.Jira.NewApi
                 hasNextPage = searchOptions.StartAt < page.Total;
                 yield return page;
             }
-
-            throw new NotImplementedException();
         }
 
         private SearchOptions NextPage(SearchOptions searchOptions)

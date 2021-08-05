@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace JiraToDgmlDump.Jira.NewApi
+﻿namespace JiraToDgmlDump.Jira.NewApi
 {
     public record SearchOptions
     {
@@ -15,9 +13,9 @@ namespace JiraToDgmlDump.Jira.NewApi
 
         public SearchOptions(string jql, int pageSize, string[] fields)
         {
-            Jql = jql ?? throw new ArgumentNullException(nameof(jql));
+            Jql = jql;
             PageSize = pageSize;
-            Fields = fields ?? throw new ArgumentNullException(nameof(fields));
+            Fields = fields;
             StartAt = 0;
         }
     }

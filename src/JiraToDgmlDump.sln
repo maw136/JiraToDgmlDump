@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30709.64
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiraToDgmlDump", "JiraToDgmlDump.csproj", "{497001A9-F32A-47F3-9956-14E22678735B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiraToDgmlDump", "JiraToDgmlDump\JiraToDgmlDump.csproj", "{497001A9-F32A-47F3-9956-14E22678735B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiraToDgmlDump.Test", "JiraToDgmlDump.Test\JiraToDgmlDump.Test.csproj", "{AAEBF82C-D65D-4D8A-BDEA-F10C23AA9C5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{497001A9-F32A-47F3-9956-14E22678735B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{497001A9-F32A-47F3-9956-14E22678735B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{497001A9-F32A-47F3-9956-14E22678735B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAEBF82C-D65D-4D8A-BDEA-F10C23AA9C5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAEBF82C-D65D-4D8A-BDEA-F10C23AA9C5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAEBF82C-D65D-4D8A-BDEA-F10C23AA9C5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAEBF82C-D65D-4D8A-BDEA-F10C23AA9C5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
