@@ -1,4 +1,4 @@
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.WorkItemAbstraction
 {
     public enum WorkItemType
     {

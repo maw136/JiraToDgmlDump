@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using JiraToDgmlDump.Jira;
+using JiraToDgmlDump.Jira.Model;
+using JiraToDgmlDump.Jira.PreviousModel;
 using OpenSoftware.DgmlTools;
 using OpenSoftware.DgmlTools.Analyses;
 using OpenSoftware.DgmlTools.Builders;
 using OpenSoftware.DgmlTools.Model;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Export
 {
     public class JiraGraphBuilder
     {

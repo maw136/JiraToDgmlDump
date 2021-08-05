@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JiraToDgmlDump.Jira.Model;
 
 namespace JiraToDgmlDump
 {

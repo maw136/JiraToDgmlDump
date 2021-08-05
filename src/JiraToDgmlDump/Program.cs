@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using JiraToDgmlDump.Export;
+using JiraToDgmlDump.Jira;
+using JiraToDgmlDump.Jira.Model;
+using JiraToDgmlDump.Jira.PreviousModel;
+using JiraToDgmlDump.WorkItemAbstraction;
 using Microsoft.Extensions.Configuration;
 using OpenSoftware.DgmlTools.Model;
 

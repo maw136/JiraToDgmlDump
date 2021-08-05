@@ -1,4 +1,4 @@
-namespace JiraToDgmlDump.ModelRaw
+namespace JiraToDgmlDump.Jira.ModelRaw
 {
     public record OutwardIssueRaw
     {

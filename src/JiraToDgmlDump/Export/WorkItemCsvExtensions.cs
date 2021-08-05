@@ -6,8 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using JiraToDgmlDump.WorkItemAbstraction;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Export
 {
     public static class WorkItemCsvExtensions
     {

@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Atlassian.Jira;
+using JiraToDgmlDump.Jira.Model;
+using JiraToDgmlDump.Jira.PreviousModel;
+using JiraToDgmlDump.WorkItemAbstraction;
 using Newtonsoft.Json.Linq;
+using JiraUser = JiraToDgmlDump.Jira.Model.JiraUser;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira
 {
     internal static class JiraExtensions
     {

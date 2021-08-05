@@ -1,4 +1,4 @@
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira.Model
 {
     public sealed record JiraUser
     {

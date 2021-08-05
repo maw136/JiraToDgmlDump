@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlassian.Jira;
+using JiraToDgmlDump.Jira.Model;
+using JiraToDgmlDump.Jira.PreviousModel;
 using RestSharp;
+using JiraUser = JiraToDgmlDump.Jira.Model.JiraUser;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira
 {
     public class JiraRepository : IJiraRepository
     {

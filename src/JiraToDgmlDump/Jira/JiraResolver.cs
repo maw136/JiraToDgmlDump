@@ -1,4 +1,4 @@
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira
 {
     public sealed class JiraResolver
     {

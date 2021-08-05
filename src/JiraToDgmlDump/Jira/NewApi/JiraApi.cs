@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using JiraToDgmlDump.Jira.PreviousModel;
 
 namespace JiraToDgmlDump.Jira.NewApi
 {

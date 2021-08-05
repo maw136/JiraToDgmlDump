@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using JiraToDgmlDump.Jira.Model;
 using Microsoft.Extensions.Configuration;
 
 namespace JiraToDgmlDump.Test

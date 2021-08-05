@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira.PreviousModel
 {
     public record IssueLight
     {

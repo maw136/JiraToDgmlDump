@@ -1,6 +1,7 @@
 ﻿using System;
+using JiraToDgmlDump.Jira.Model;
 
-namespace JiraToDgmlDump.ModelRaw
+namespace JiraToDgmlDump.Jira.ModelRaw
 {
     public record IssueRaw : IssueRawHeader
     {

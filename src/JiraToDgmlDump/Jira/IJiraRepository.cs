@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JiraToDgmlDump.Jira.Model;
+using JiraToDgmlDump.Jira.PreviousModel;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira
 {
     public interface IJiraRepository
     {

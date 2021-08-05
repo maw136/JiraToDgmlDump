@@ -1,6 +1,6 @@
 using System;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.WorkItemAbstraction
 {
     public record WorkItem
     {

@@ -1,6 +1,6 @@
-namespace JiraToDgmlDump
+﻿namespace JiraToDgmlDump.Jira.ModelRaw
 {
-    public record JiraNamedObjectLight
+    public record NamedObject
     {
         public string Id { get; init; }
         public string Name { get; init; }

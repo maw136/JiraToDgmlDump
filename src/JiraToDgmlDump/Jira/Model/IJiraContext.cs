@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Jira.Model
 {
     public interface IJiraContext
     {

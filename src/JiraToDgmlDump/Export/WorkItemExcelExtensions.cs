@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
+using JiraToDgmlDump.WorkItemAbstraction;
 
-namespace JiraToDgmlDump
+namespace JiraToDgmlDump.Export
 {
     public static class WorkItemExcelExtensions
     {
